@@ -1,128 +1,748 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brat Meme Generator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.hertzen.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet" />
-  <style>
-    .font-brat { font-family: 'Arial Black', Impact, sans-serif; font-weight: 900; }
-    .font-monospace { font-family: 'Courier New', Courier, monospace; }
-    .font-handwritten { font-family: 'Permanent Marker', cursive; font-weight: 400; }
-    .brat-text { line-height: 1; white-space: pre-wrap; transition: color 0.1s; }
-    .text-glow-pink { text-shadow: 0 0 3px rgba(255,0,100,0.6), 0 0 6px rgba(255,0,150,0.4); }
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #16a34a;
-      color: white;
-      font-weight: 600;
-      padding: 10px 18px;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      z-index: 1000;
-    }
-    .toast.show { opacity: 1; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brat Meme Generator</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load html2canvas for screenshot functionality -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.hertzen.min.js"></script>
+    <!-- Load a custom font for the Handwritten style -->
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        /* Define the core font styles */
+        .font-brat {
+            font-family: 'Arial Black', Impact, sans-serif;
+            font-weight: 900;
+        }
+        .font-monospace {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .font-handwritten {
+            font-family: 'Permanent Marker', cursive;
+            font-weight: 400; /* Permanent Marker only has one weight */
+        }
+
+        /* General text styling applied to the output */
+        .brat-text {
+            line-height: 1.0; /* Tight line spacing */
+            word-break: break-word;
+            white-space: pre-wrap; /* Respects line breaks and spaces */
+            transition: color 0.1s;
+        }
+        
+        /* Text Outline/Stroke CSS */
+        .text-outline-white {
+            -webkit-text-stroke: 3px white;
+            text-stroke: 3px white;
+        }
+        .text-outline-black {
+            -webkit-text-stroke: 3px black;
+            text-stroke: 3px black;
+        }
+
+        /* Text shadow for a subtle glow effect on the credit line */
+        .text-glow-pink {
+            text-shadow: 0 0 3px rgba(255, 0, 100, 0.6), 0 0 6px rgba(255, 0, 150, 0.4);
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a3a3a3;
+            border-radius: 4px;
+        }
+        /* Custom styling for the border-radius slider */
+        .range-pink-500::-webkit-slider-thumb {
+            background-color: #ec4899; /* pink-500 */
+        }
+        .range-pink-500::-moz-range-thumb {
+            background-color: #ec4899; /* pink-500 */
+        }
+    </style>
 </head>
-
+<!-- Background color: #fae6f0 (soft pink) -->
 <body class="min-h-screen p-4 flex flex-col items-center font-inter" style="background-color: #fae6f0;">
-  <div class="max-w-xl w-full">
-    <header class="text-center mb-6">
-      <h1 class="text-4xl font-extrabold text-black tracking-tight leading-tight">Brat Text Generator</h1>
-      <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
-    </header>
 
-    <div id="meme-canvas"
-      class="w-full aspect-square flex items-center justify-center p-4 shadow-xl mb-6 transition-colors duration-300"
-      style="background-color:#fce7f3;min-height:350px;border-radius:12px;">
-      <div id="brat-output"
-        class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words"
-        style="color:#000;">
-        Brat and it's the same but there's three more songs so it's not
-      </div>
+    <div class="max-w-xl w-full">
+        <!-- Professional Header -->
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-black tracking-tight leading-tight">
+                Brat Text Generator
+            </h1>
+            <!-- Darker Pink + Glow effect -->
+            <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
+        </header>
+
+        <!-- The Meme Canvas (Area to be captured) -->
+        <!-- Default canvas background color is a slightly deeper pink: #fce7f3 -->
+        <div id="meme-canvas" class="w-full aspect-square flex items-center justify-center p-4 shadow-xl mb-6 transition-colors duration-300"
+             style="background-color: #fce7f3; min-height: 350px; border-radius: 12px;">
+
+            <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words" style="color: #000;">
+                Brat and it's the same but there's three more songs so it's not
+            </div>
+        </div>
+
+        <!-- Text Input & Controls -->
+        <div class="bg-white p-4 rounded-xl shadow-lg space-y-4">
+            <!-- Text Input -->
+            <div>
+                <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text (Use Enter for New Lines):</label>
+                <textarea id="text-input" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-base"
+                          placeholder="Type your meme text here..."></textarea>
+            </div>
+
+            <!-- Specialized Styles -->
+            <div class="grid grid-cols-2 gap-3 pt-2">
+                <!-- Green Scratched Style is removed and disabled -->
+                <button id="style-green-btn" class="w-full py-2 px-4 bg-lime-500 text-black font-semibold rounded-lg shadow-md transition duration-150 text-sm opacity-50 cursor-not-allowed" disabled>
+                    Green Scratched Style (Removed)
+                </button>
+                <button id="style-blue-red-btn" class="w-full py-2 px-4 bg-blue-600 text-red-400 font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 text-sm">
+                    Blue/Red Style
+                </button>
+            </div>
+            
+            <!-- Main Style Controls (Font, Case, Color, NEW: Outline) -->
+            <div class="grid grid-cols-3 gap-3">
+                
+                <!-- Text Style Selector -->
+                <div class="col-span-3 sm:col-span-1">
+                    <label for="text-style" class="block text-sm font-medium text-gray-700 mb-1">Text Style:</label>
+                    <select id="text-style" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-sm appearance-none">
+                        <option value="font-brat">Brat Style (Impact)</option>
+                        <option value="font-monospace">Monospace</option>
+                        <option value="font-handwritten">Handwritten</option>
+                    </select>
+                </div>
+                
+                <!-- Text Color Toggle -->
+                <div class="col-span-2 sm:col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Text Color:</label>
+                    <button id="text-color-btn" class="w-full p-2 bg-black text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition duration-150 text-sm border-2 border-black">
+                        Black Text
+                    </button>
+                </div>
+
+                <!-- Case Transformer Toggle -->
+                <div class="col-span-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Case:</label>
+                    <button id="case-toggle-btn" class="w-full p-2 bg-purple-500 text-white font-semibold rounded-lg shadow-md hover:bg-purple-600 transition duration-150 text-sm">
+                        UPPERCASE
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Text Outline Control -->
+            <div class="w-full">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Text Outline (Stroke):</label>
+                <button id="outline-toggle-btn" class="w-full p-2 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 transition duration-150 text-sm border-2 border-gray-400">
+                    No Outline
+                </button>
+            </div>
+
+            <!-- Color Selector -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Background Color:</label>
+                <div id="color-selector" class="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg justify-center sm:justify-start">
+                    <!-- Color Buttons will be injected here -->
+                </div>
+            </div>
+
+
+            <!-- Extra Features (Randomize & Sliders) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Randomize Button -->
+                <div class="md:col-span-1">
+                     <label class="block text-sm font-medium text-transparent mb-1 select-none">Action</label>
+                    <button id="randomize-btn" class="w-full py-2 px-4 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600 transition duration-150 text-sm">
+                        Randomize Placement
+                    </button>
+                </div>
+                
+                <!-- Font Size Slider (MAX 62px) -->
+                <div>
+                    <label for="font-size" class="block text-sm font-medium text-gray-700 mb-1">Font Size (Max 62px)</label>
+                    <input type="range" id="font-size" min="30" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
+                    <span id="font-size-value" class="text-xs text-gray-500 block text-center mt-1">62px</span>
+                </div>
+                
+                <!-- Border Radius Slider -->
+                <div>
+                    <label for="border-radius" class="block text-sm font-medium text-gray-700 mb-1">Border Radius</label>
+                    <input type="range" id="border-radius" min="0" max="50" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
+                    <span id="border-radius-value" class="text-xs text-gray-500 block text-center mt-1">12px</span>
+                </div>
+            </div>
+
+            <!-- Download Button -->
+            <button id="download-btn" class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
+                Download Meme (PNG)
+            </button>
+            
+            <!-- Limit Exceeded Message and Password (Hidden by Default) -->
+            <div id="limit-message" class="hidden text-center p-4 bg-red-100 border border-red-400 rounded-lg space-y-3">
+                <p class="font-bold text-red-700">Opps... You have hit the limit for today ask the secret code from abhi 🤫</p>
+                <div class="flex space-x-2">
+                    <div class="relative flex-grow">
+                        <input type="password" id="secret-password" placeholder="Enter Secret Code" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-base pr-10">
+                        <button id="show-password-btn" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 text-sm" type="button">
+                            Show
+                        </button>
+                    </div>
+                    <button id="unlock-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-150">
+                        Unlock Unlimited
+                    </button>
+                </div>
+                <p id="password-error" class="text-sm text-red-500 hidden">Incorrect code. Try again!</p>
+            </div>
+        </div>
+
+        <p class="text-center text-xs text-gray-500 mt-4">
+            *Ensure your text and background colors provide enough contrast.
+        </p>
     </div>
+    
+    <!-- Custom Footer with updated text -->
+    <footer class="mt-6 pb-6 text-center text-sm text-gray-600">
+        © 2025 Crafted with <span class="text-red-500">💖</span> by Abhi for the Meme Geeks
+    </footer>
 
-    <div class="bg-white p-4 rounded-xl shadow-lg space-y-4">
-      <div>
-        <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text:</label>
-        <textarea id="text-input" rows="4"
-          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-base"
-          placeholder="Type your meme text here..."></textarea>
-      </div>
+    <script>
+        const canvas = document.getElementById('meme-canvas');
+        const outputDiv = document.getElementById('brat-output');
+        const textInput = document.getElementById('text-input');
+        const colorSelector = document.getElementById('color-selector');
+        const downloadBtn = document.getElementById('download-btn');
+        const randomizeBtn = document.getElementById('randomize-btn');
+        const fontSizeInput = document.getElementById('font-size');
+        const fontSizeValue = document.getElementById('font-size-value');
+        const textStyleSelect = document.getElementById('text-style');
+        const textColorBtn = document.getElementById('text-color-btn');
+        const caseToggleBtn = document.getElementById('case-toggle-btn');
+        const outlineToggleBtn = document.getElementById('outline-toggle-btn');
+        const borderRadiusInput = document.getElementById('border-radius');
+        const borderRadiusValue = document.getElementById('border-radius-value');
+        const limitMessageDiv = document.getElementById('limit-message');
+        const secretPasswordInput = document.getElementById('secret-password');
+        const unlockBtn = document.getElementById('unlock-btn');
+        const passwordError = document.getElementById('password-error');
+        const styleGreenBtn = document.getElementById('style-green-btn'); 
+        const styleBlueRedBtn = document.getElementById('style-blue-red-btn');
+        const showPasswordBtn = document.getElementById('show-password-btn');
 
-      <button id="download-btn"
-        class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
-        Download Meme (PNG)
-      </button>
-    </div>
-  </div>
+        // --- Configuration ---
+        // NEW STRICT LIMIT: Only 1 free use allowed before password required
+        const DAILY_LIMIT = 1; 
+        const SECRET_CODE = 'ABHIJEET012';
+        const COUNT_KEY = 'bratGenerator_dailyCount';
+        const DATE_KEY = 'bratGenerator_lastDate';
+        const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
+        
+        // Outline States (0: None, 1: White, 2: Black)
+        let currentOutlineState = 0; 
+        const outlineClasses = ['', 'text-outline-white', 'text-outline-black'];
+        const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
 
-  <div id="toast" class="toast">✅ Saved to Gallery!</div>
+        const colors = [
+            // Light Pink (UI) color is now #fae6f0
+            { name: 'Light Pink (UI)', value: '#fae6f0', border: 'border-pink-500' },
+            // Default canvas color
+            { name: 'Pink', value: '#fce7f3', border: 'border-pink-500' }, 
+            { name: 'Black', value: '#000000', border: 'border-white' },
+            { name: 'White', value: '#ffffff', border: 'border-gray-500' },
+            { name: 'Yellow', value: '#fde047', border: 'border-yellow-600' },
+            { name: 'Red', value: '#fca5a5', border: 'border-red-600' },
+            { name: 'Orange', value: '#fed7aa', border: 'border-orange-600' },
+            { name: 'Green', value: '#d9f99d', border: 'border-green-600' }
+        ];
 
-  <script>
-    const canvas = document.getElementById('meme-canvas');
-    const outputDiv = document.getElementById('brat-output');
-    const textInput = document.getElementById('text-input');
-    const downloadBtn = document.getElementById('download-btn');
-    const toast = document.getElementById('toast');
+        // Initial settings now default to the distinct pink (#fce7f3) canvas background
+        let currentFontSize = 62;
+        let currentFontStyle = 'font-brat';
+        let isUppercase = false;
+        let isWhiteText = false;
+        let activeSpecialStyle = null; 
+        // Initial canvas background is the default pink, index 1 in the new list
+        let currentBackgroundColor = colors[1].value; 
+        let currentTextColor = colors[2].value; // Black
+        let currentActiveColorButton = null;
 
-    // Daily limit logic
-    const DAILY_LIMIT = 2;
-    const COUNT_KEY = 'brat_dailyCount';
-    const DATE_KEY = 'brat_date';
 
-    function getToday() {
-      return new Date().toISOString().split('T')[0];
-    }
-    function checkDailyLimit() {
-      const today = getToday();
-      const storedDate = localStorage.getItem(DATE_KEY);
-      if (storedDate !== today) {
-        localStorage.setItem(DATE_KEY, today);
-        localStorage.setItem(COUNT_KEY, 0);
-      }
-      return parseInt(localStorage.getItem(COUNT_KEY) || '0');
-    }
-    function incrementCount() {
-      const count = checkDailyLimit() + 1;
-      localStorage.setItem(COUNT_KEY, count);
-    }
+        // --- Message Box Utility (Non-alert) ---
 
-    function showToast() {
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+        function showMessageBox(message) {
+            let msgDiv = document.getElementById('temp-message-box');
+            if (!msgDiv) {
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'temp-message-box';
+                msgDiv.className = 'fixed top-4 right-4 bg-pink-600 text-white p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 transform translate-x-1/2';
+                document.body.appendChild(msgDiv);
+            }
+            msgDiv.textContent = message;
+            
+            // Reset position and opacity for transition
+            msgDiv.classList.remove('opacity-0', 'translate-x-1/2');
+            msgDiv.classList.add('opacity-100', 'translate-x-0');
+            
+            // Fade out and remove
+            setTimeout(() => {
+                msgDiv.classList.remove('opacity-100', 'translate-x-0');
+                msgDiv.classList.add('opacity-0', 'translate-x-1/2');
+                setTimeout(() => msgDiv.remove(), 300);
+            }, 3000);
+        }
 
-    function handleDownload() {
-      const count = checkDailyLimit();
-      if (count >= DAILY_LIMIT) {
-        alert("⛔ You reached today's download limit! Ask Abhi for the code 🤫");
-        return;
-      }
+        // --- Screenshot Protection Functions ---
 
-      html2canvas(canvas, { allowTaint: true, useCORS: true, scale: 2 }).then(canvasImg => {
-        canvasImg.toBlob(blob => {
-          const filename = 'brat_meme_' + Date.now() + '.png';
-          saveAs(blob, filename);
-          incrementCount();
-          showToast();
+        function applyScreenProtection() {
+            // 1. Disable right-click context menu on the main canvas (most common way to 'Save Image As')
+            canvas.oncontextmenu = (e) => {
+                e.preventDefault();
+                showMessageBox("Screenshot features are restricted until unlocked!");
+            };
+            
+            // 2. Disable print shortcut (Ctrl/Cmd + P) on the entire window
+            window.onkeydown = (e) => {
+                // Check for Ctrl+P (Windows/Linux) or Cmd+P (Mac)
+                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+                    e.preventDefault();
+                    showMessageBox("Printing is disabled due to the daily limit. Please unlock!");
+                    return false;
+                }
+            };
+        }
+
+        function removeScreenProtection() {
+            canvas.oncontextmenu = null; // Re-enable right-click
+            window.onkeydown = null; // Re-enable print
+        }
+
+        // --- Limit Handling Functions ---
+
+        function checkDailyLimit() {
+            if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
+                return { allowed: true, count: 'Unlimited' };
+            }
+
+            const today = new Date().toDateString();
+            const lastDate = localStorage.getItem(DATE_KEY);
+            let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
+
+            if (lastDate !== today) {
+                count = 0;
+                localStorage.setItem(COUNT_KEY, '0');
+                localStorage.setItem(DATE_KEY, today);
+            }
+
+            const allowed = count < DAILY_LIMIT;
+            return { allowed: allowed, count: count };
+        }
+
+        function incrementCount() {
+            if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
+                return;
+            }
+            
+            let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
+            count += 1;
+            localStorage.setItem(COUNT_KEY, count.toString());
+
+            // Check if the new count hits the limit (1/1)
+            if (count >= DAILY_LIMIT) {
+                updateDownloadButtonState();
+            }
+        }
+
+        function showLimitMessage() {
+            downloadBtn.classList.add('hidden');
+            limitMessageDiv.classList.remove('hidden');
+        }
+
+        function hideLimitMessage() {
+            downloadBtn.classList.remove('hidden');
+            limitMessageDiv.classList.add('hidden');
+        }
+        
+        function updateDownloadButtonState() {
+            const status = checkDailyLimit();
+            if (status.allowed) {
+                hideLimitMessage();
+                removeScreenProtection(); // *** Remove protection when allowed ***
+                if (status.count === 'Unlimited') {
+                    downloadBtn.textContent = 'Download Meme (Unlimited)';
+                } else {
+                    // Correctly displays 0/1 used
+                    downloadBtn.textContent = `Download Meme (PNG) (${status.count}/${DAILY_LIMIT} Used)`;
+                }
+                downloadBtn.disabled = false;
+            } else {
+                downloadBtn.textContent = 'Download Meme (Limit Reached)';
+                downloadBtn.disabled = true;
+                showLimitMessage();
+                applyScreenProtection(); // *** Apply protection when locked ***
+            }
+        }
+
+        function handleUnlock() {
+            const code = secretPasswordInput.value.trim();
+            if (code === SECRET_CODE) {
+                localStorage.setItem(UNLIMITED_KEY, 'true');
+                passwordError.classList.add('hidden');
+                
+                limitMessageDiv.innerHTML = '<p class="font-bold text-green-700">Success! You now have UNLIMITED generations! Enjoy! 🎉</p>';
+                
+                removeScreenProtection(); // Remove protection on successful unlock
+                updateDownloadButtonState();
+                downloadBtn.disabled = false;
+                downloadBtn.classList.remove('hidden');
+
+            } else {
+                passwordError.classList.remove('hidden');
+                secretPasswordInput.value = '';
+                showMessageBox("Incorrect code!");
+            }
+        }
+        
+        function toggleShowPassword() {
+            if (secretPasswordInput.type === 'password') {
+                secretPasswordInput.type = 'text';
+                showPasswordBtn.textContent = 'Hide';
+            } else {
+                secretPasswordInput.type = 'password';
+                showPasswordBtn.textContent = 'Show';
+            }
+        }
+
+        // --- Core Functions (Unchanged) ---
+
+        function updateText() {
+            let text = textInput.value.trim();
+            if (text === "") {
+                 text = "Brat and it's the same but there's three more songs so it's not";
+            }
+            outputDiv.textContent = text;
+            resetPlacement(); 
+            applyActiveStyle(); 
+        }
+
+        function applyColor(colorValue) {
+            currentBackgroundColor = colorValue;
+            canvas.style.backgroundColor = colorValue;
+        }
+
+        function applyTextColor(colorValue) {
+             currentTextColor = colorValue;
+             outputDiv.style.color = colorValue;
+        }
+
+        function applyFontStyle(styleClass) {
+            outputDiv.classList.remove(currentFontStyle);
+            outputDiv.classList.add(styleClass);
+            currentFontStyle = styleClass;
+            applyFontSize(currentFontSize); 
+        }
+
+        function toggleTextColor() {
+            activeSpecialStyle = null; 
+            deactivateStyleButtons();
+            
+            isWhiteText = !isWhiteText;
+            const color = isWhiteText ? '#ffffff' : '#000000';
+            const textLabel = isWhiteText ? 'White Text' : 'Black Text';
+
+            applyTextColor(color);
+            textColorBtn.textContent = textLabel;
+            
+            textColorBtn.classList.toggle('bg-black', !isWhiteText);
+            textColorBtn.classList.toggle('text-white', !isWhiteText);
+            textColorBtn.classList.toggle('bg-white', isWhiteText);
+            textColorBtn.classList.toggle('text-black', isWhiteText);
+        }
+        
+        function toggleOutline() {
+            currentOutlineState = (currentOutlineState + 1) % outlineClasses.length;
+            
+            outputDiv.classList.remove(...outlineClasses.filter(c => c !== '')); 
+            
+            const newClass = outlineClasses[currentOutlineState];
+            if (newClass) {
+                outputDiv.classList.add(newClass);
+                if (currentOutlineState === 1 && currentTextColor === '#ffffff') { 
+                    applyTextColor('#000000');
+                    isWhiteText = false;
+                    textColorBtn.textContent = 'Black Text';
+                    textColorBtn.classList.add('bg-black', 'text-white');
+                    textColorBtn.classList.remove('bg-white', 'text-black');
+                } else if (currentOutlineState === 2 && currentTextColor === '#000000') { 
+                    applyTextColor('#ffffff');
+                    isWhiteText = true;
+                    textColorBtn.textContent = 'White Text';
+                    textColorBtn.classList.add('bg-white', 'text-black');
+                    textColorBtn.classList.remove('bg-black', 'text-white');
+                }
+            }
+
+            outlineToggleBtn.textContent = outlineLabels[currentOutlineState];
+            outlineToggleBtn.classList.remove('bg-gray-200', 'bg-white', 'bg-black', 'text-gray-800', 'text-white', 'border-gray-400', 'border-black', 'border-white');
+            
+            if (currentOutlineState === 0) {
+                outlineToggleBtn.classList.add('bg-gray-200', 'text-gray-800', 'border-gray-400');
+            } else if (currentOutlineState === 1) { 
+                 outlineToggleBtn.classList.add('bg-white', 'text-black', 'border-black');
+            } else { 
+                 outlineToggleBtn.classList.add('bg-black', 'text-white', 'border-white');
+            }
+        }
+
+        function toggleCase() {
+            isUppercase = !isUppercase;
+            
+            if (isUppercase) {
+                outputDiv.classList.add('uppercase');
+                caseToggleBtn.textContent = 'Normal Case';
+                caseToggleBtn.classList.replace('bg-purple-500', 'bg-red-500');
+                caseToggleBtn.classList.replace('hover:bg-purple-600', 'hover:bg-red-600');
+            } else {
+                outputDiv.classList.remove('uppercase');
+                caseToggleBtn.textContent = 'UPPERCASE';
+                caseToggleBtn.classList.replace('bg-red-500', 'bg-purple-500');
+                caseToggleBtn.classList.replace('hover:bg-red-600', 'hover:bg-purple-600');
+            }
+        }
+
+        function applyFontSize(size) {
+            currentFontSize = Math.min(size, 62);
+            fontSizeInput.value = currentFontSize; 
+            
+            outputDiv.style.fontSize = `${currentFontSize}px`;
+            fontSizeValue.textContent = `${currentFontSize}px`;
+            
+            outputDiv.style.lineHeight = (currentFontStyle === 'font-handwritten') ? '1.1' : '1.0';
+        }
+
+        function applyBorderRadius(radius) {
+            canvas.style.borderRadius = `${radius}px`;
+            borderRadiusValue.textContent = `${radius}px`;
+        }
+
+        function createColorButtons() {
+            colorSelector.innerHTML = '';
+            
+            colors.forEach((color, index) => {
+                const button = document.createElement('button');
+                button.className = `w-8 h-8 rounded-full shadow-md transition duration-150 transform hover:scale-110 ${color.border} border-2`;
+                button.style.backgroundColor = color.value;
+                button.title = color.name;
+                button.onclick = () => {
+                    activeSpecialStyle = null; 
+                    deactivateStyleButtons();
+                    applyColor(color.value);
+                    applyTextColor(isWhiteText ? '#ffffff' : '#000000');
+                    
+                    document.querySelectorAll('#color-selector button').forEach(btn => {
+                        btn.style.borderWidth = '2px';
+                    });
+                    button.style.borderWidth = '4px'; 
+                    currentActiveColorButton = button;
+                };
+                colorSelector.appendChild(button);
+
+                if (index === 1) { 
+                    button.style.borderWidth = '4px';
+                    currentActiveColorButton = button;
+                }
+            });
+        }
+        
+        function deactivateStyleButtons() {
+            styleBlueRedBtn.classList.remove('ring-4', 'ring-offset-2', 'ring-red-700');
+            if (currentActiveColorButton) {
+                currentActiveColorButton.style.borderWidth = '2px';
+                currentActiveColorButton = null;
+            }
+        }
+
+        function setSpecialStyle(styleName, styleButton) {
+            if (styleName !== 'blue-red') return;
+            
+            document.querySelectorAll('#color-selector button').forEach(btn => btn.style.borderWidth = '2px');
+
+            if (activeSpecialStyle === styleName) {
+                activeSpecialStyle = null;
+                deactivateStyleButtons();
+                applyColor(colors[1].value); 
+                applyTextColor(colors[2].value); 
+                
+                const defaultColorButton = colorSelector.querySelector(`button[title="${colors[1].name}"]`);
+                if(defaultColorButton) {
+                    defaultColorButton.style.borderWidth = '4px';
+                    currentActiveColorButton = defaultColorButton;
+                }
+                
+            } else {
+                activeSpecialStyle = styleName;
+                deactivateStyleButtons();
+                styleButton.classList.add('ring-4', 'ring-offset-2', 'ring-red-700');
+                
+                applyColor('#1d4ed8'); 
+                applyTextColor('#ef4444'); 
+            }
+            updateText();
+        }
+        
+        function applyActiveStyle() {
+            if (activeSpecialStyle === 'blue-red') {
+                applyColor('#1d4ed8');
+                applyTextColor('#ef4444');
+            } else {
+                applyColor(currentBackgroundColor);
+                applyTextColor(currentTextColor);
+            }
+        }
+
+
+        function randomizePlacement() {
+            resetPlacement(); 
+            
+            const lines = outputDiv.textContent.split('\n');
+            outputDiv.innerHTML = ''; 
+
+            lines.forEach(line => {
+                const span = document.createElement('span');
+                span.textContent = line.trim();
+
+                const randomMarginLeft = Math.floor(Math.random() * 21) - 10;
+                const randomMarginRight = Math.floor(Math.random() * 21) - 10;
+                const randomPaddingTop = Math.floor(Math.random() * 11);
+                const randomPaddingBottom = Math.floor(Math.random() * 11);
+
+                span.style.display = 'block'; 
+                span.style.marginLeft = `${randomMarginLeft}px`;
+                span.style.marginRight = `${randomMarginRight}px`;
+                span.style.paddingTop = `${randomPaddingTop}px`;
+                span.style.paddingBottom = `${randomPaddingBottom}px`;
+                
+                span.className = outputDiv.className; 
+                span.style.cssText += outputDiv.style.cssText; 
+                span.style.color = currentTextColor;
+                
+                outputDiv.appendChild(span);
+            });
+            
+            randomizeBtn.textContent = 'Reset Placement';
+            randomizeBtn.classList.replace('bg-orange-500', 'bg-gray-500');
+            randomizeBtn.classList.replace('hover:bg-orange-600', 'hover:bg-gray-600');
+        }
+
+        function resetPlacement() {
+            let text = textInput.value.trim();
+            if (text === "") {
+                 text = "Brat and it's the same but there's three more songs so it's not";
+            }
+            outputDiv.textContent = text;
+            
+            randomizeBtn.textContent = 'Randomize Placement';
+            randomizeBtn.classList.replace('bg-gray-500', 'bg-orange-500');
+            randomizeBtn.classList.replace('hover:bg-gray-600', 'hover:bg-orange-600');
+            
+            applyFontStyle(currentFontStyle); 
+            applyFontSize(currentFontSize);
+            if(isUppercase) { outputDiv.classList.add('uppercase'); }
+            
+            applyActiveStyle();
+        }
+        
+        function handleDownload() {
+            const status = checkDailyLimit();
+            if (!status.allowed) {
+                updateDownloadButtonState();
+                showMessageBox("Limit reached! Enter the code to download.");
+                return;
+            }
+
+            const originalBodyBackgroundColor = document.body.style.backgroundColor;
+            document.body.style.backgroundColor = canvas.style.backgroundColor;
+
+            html2canvas(canvas, {
+                allowTaint: true,
+                useCORS: true,
+                scale: 2 
+            }).then(canvasImage => {
+                canvasImage.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = 'brat_meme_' + Date.now() + '.png';
+                    link.href = URL.createObjectURL(blob);
+                    
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href); 
+
+                    incrementCount();
+                    updateDownloadButtonState();
+                }, 'image/png');
+                
+            }).catch(error => {
+                console.error("Error generating image:", error);
+                showMessageBox("Image generation failed. Check console for details.");
+            }).finally(() => {
+                document.body.style.backgroundColor = originalBodyBackgroundColor;
+            });
+        }
+
+        // --- Event Listeners ---
+
+        textInput.addEventListener('input', updateText);
+        textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
+        textColorBtn.addEventListener('click', toggleTextColor);
+        outlineToggleBtn.addEventListener('click', toggleOutline);
+        caseToggleBtn.addEventListener('click', toggleCase);
+        fontSizeInput.addEventListener('input', (e) => applyFontSize(parseInt(e.target.value)));
+        borderRadiusInput.addEventListener('input', (e) => applyBorderRadius(parseInt(e.target.value)));
+
+        styleGreenBtn.addEventListener('click', () => {}); 
+        styleBlueRedBtn.addEventListener('click', () => setSpecialStyle('blue-red', styleBlueRedBtn));
+        
+        showPasswordBtn.addEventListener('click', toggleShowPassword);
+
+        randomizeBtn.addEventListener('click', () => {
+            if (randomizeBtn.textContent === 'Randomize Placement') {
+                randomizePlacement();
+            } else {
+                resetPlacement();
+            }
         });
-      }).catch(err => console.error(err));
-    }
 
-    textInput.addEventListener('input', e => {
-      outputDiv.textContent = e.target.value || "Brat and it's the same but there's three more songs so it's not";
-    });
-    downloadBtn.addEventListener('click', handleDownload);
-  </script>
+        downloadBtn.addEventListener('click', handleDownload);
+        unlockBtn.addEventListener('click', handleUnlock);
+        secretPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUnlock();
+            }
+        });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            createColorButtons();
+            
+            currentFontSize = 62;
+            fontSizeInput.value = 62;
+
+            updateText();
+            applyFontSize(currentFontSize); 
+            applyBorderRadius(parseInt(borderRadiusInput.value));
+            updateDownloadButtonState(); // Check limit and apply/remove protection on load
+        });
+
+    </script>
 </body>
 </html>
+
