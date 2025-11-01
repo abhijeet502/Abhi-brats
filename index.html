@@ -32,7 +32,7 @@
             transition: color 0.1s;
         }
         
-        /* Text Outline/Stroke CSS (NEW FEATURE) */
+        /* Text Outline/Stroke CSS */
         .text-outline-white {
             -webkit-text-stroke: 3px white;
             text-stroke: 3px white;
@@ -227,7 +227,7 @@
         const textStyleSelect = document.getElementById('text-style');
         const textColorBtn = document.getElementById('text-color-btn');
         const caseToggleBtn = document.getElementById('case-toggle-btn');
-        const outlineToggleBtn = document.getElementById('outline-toggle-btn'); // NEW ELEMENT
+        const outlineToggleBtn = document.getElementById('outline-toggle-btn');
         const borderRadiusInput = document.getElementById('border-radius');
         const borderRadiusValue = document.getElementById('border-radius-value');
         const limitMessageDiv = document.getElementById('limit-message');
@@ -379,6 +379,7 @@
 
         function applyColor(colorValue) {
             currentBackgroundColor = colorValue;
+            // IMPORTANT: Only set the canvas background color, not the body's.
             canvas.style.backgroundColor = colorValue;
         }
 
@@ -423,7 +424,7 @@
             const newClass = outlineClasses[currentOutlineState];
             if (newClass) {
                 outputDiv.classList.add(newClass);
-                // Also set color to black/white for better visibility if outline is active
+                // Also enforce text color for visibility if outline is active
                 if (currentOutlineState === 1 && currentTextColor === '#ffffff') { // White Outline, White Text
                     // Change text to black so it shows up better
                     applyTextColor('#000000');
@@ -443,7 +444,7 @@
 
             // Update the button appearance and text
             outlineToggleBtn.textContent = outlineLabels[currentOutlineState];
-            outlineToggleBtn.classList.remove('bg-gray-200', 'bg-white', 'bg-black', 'text-gray-800', 'text-white');
+            outlineToggleBtn.classList.remove('bg-gray-200', 'bg-white', 'bg-black', 'text-gray-800', 'text-white', 'border-gray-400', 'border-black', 'border-white');
             
             if (currentOutlineState === 0) {
                 outlineToggleBtn.classList.add('bg-gray-200', 'text-gray-800', 'border-gray-400');
@@ -497,6 +498,7 @@
                 button.onclick = () => {
                     activeSpecialStyle = null; 
                     deactivateStyleButtons();
+                    // This correctly only applies color to the canvas
                     applyColor(color.value);
                     applyTextColor(isWhiteText ? '#ffffff' : '#000000');
                     
@@ -625,7 +627,8 @@
             
             applyActiveStyle();
         }
-
+        
+        // --- FIXED DOWNLOAD FUNCTION ---
         function handleDownload() {
             const status = checkDailyLimit();
             if (!status.allowed) {
@@ -633,8 +636,9 @@
                 return;
             }
 
-            // Save the original body background color
+            // Save the original body background color BEFORE capture starts
             const originalBodyBackgroundColor = document.body.style.backgroundColor;
+            
             // Temporarily set body background to canvas background for clean capture
             document.body.style.backgroundColor = canvas.style.backgroundColor;
 
@@ -643,33 +647,38 @@
                 useCORS: true,
                 scale: 2 
             }).then(canvasImage => {
-                // Successful capture and download logic
-                const imgData = canvasImage.toDataURL('image/png');
-                const link = document.createElement('a');
-                link.download = 'brat_meme_' + Date.now() + '.png';
-                link.href = imgData;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                // FIXED: Using toBlob() is more reliable than simulating a click on a base64 link
+                canvasImage.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.download = 'brat_meme_' + Date.now() + '.png';
+                    link.href = URL.createObjectURL(blob);
+                    
+                    // Add link to body, click it, and clean up
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href); // Clean up URL object
 
-                incrementCount();
-                updateDownloadButtonState();
-
+                    incrementCount();
+                    updateDownloadButtonState();
+                }, 'image/png');
+                
             }).catch(error => {
                 console.error("Error generating image:", error);
                 console.log("Image generation failed. Check console for details.");
             }).finally(() => {
-                // CRITICAL: Restore the original body background color regardless of success or failure
+                // CRITICAL FIX: Restore the original body background color reliably, regardless of success or failure
                 document.body.style.backgroundColor = originalBodyBackgroundColor;
             });
         }
+        // --- END FIXED DOWNLOAD FUNCTION ---
 
         // --- Event Listeners ---
 
         textInput.addEventListener('input', updateText);
         textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
         textColorBtn.addEventListener('click', toggleTextColor);
-        outlineToggleBtn.addEventListener('click', toggleOutline); // NEW LISTENER
+        outlineToggleBtn.addEventListener('click', toggleOutline);
         caseToggleBtn.addEventListener('click', toggleCase);
         fontSizeInput.addEventListener('input', (e) => applyFontSize(parseInt(e.target.value)));
         borderRadiusInput.addEventListener('input', (e) => applyBorderRadius(parseInt(e.target.value)));
