@@ -239,9 +239,7 @@
         const showPasswordBtn = document.getElementById('show-password-btn');
 
         // --- Configuration ---
-        // Changed daily limit from 1 to 2 per your request
         const DAILY_LIMIT = 2; 
-        // Updated secret code as requested
         const SECRET_CODE = 'ABHIJEET0123';
         const COUNT_KEY = 'bratGenerator_dailyCount';
         const DATE_KEY = 'bratGenerator_lastDate';
@@ -253,9 +251,7 @@
         const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
 
         const colors = [
-            // Light Pink (UI) color is now #fae6f0
             { name: 'Light Pink (UI)', value: '#fae6f0', border: 'border-pink-500' },
-            // Default canvas color
             { name: 'Pink', value: '#fce7f3', border: 'border-pink-500' }, 
             { name: 'Black', value: '#000000', border: 'border-white' },
             { name: 'White', value: '#ffffff', border: 'border-gray-500' },
@@ -263,23 +259,21 @@
             { name: 'Red', value: '#fca5a5', border: 'border-red-600' },
             { name: 'Orange', value: '#fed7aa', border: 'border-orange-600' },
             { name: 'Green', value: '#d9f99d', border: 'border-green-600' },
-            // Added the requested darker green
             { name: 'Dark Green', value: '#065f46', border: 'border-green-800' }
         ];
 
-        // Initial settings now default to the distinct pink (#fce7f3) canvas background
+        // Initial settings
         let currentFontSize = 62;
         let currentFontStyle = 'font-brat';
         let isUppercase = false;
         let isWhiteText = false;
         let activeSpecialStyle = null; 
-        // Initial canvas background is the default pink, index 1 in the new list
         let currentBackgroundColor = colors[1].value; 
         let currentTextColor = colors[2].value; // Black
         let currentActiveColorButton = null;
 
 
-        // --- Message Box Utility (Non-alert) ---
+        // --- Message Box Utility ---
 
         function showMessageBox(message) {
             let msgDiv = document.getElementById('temp-message-box');
@@ -290,12 +284,8 @@
                 document.body.appendChild(msgDiv);
             }
             msgDiv.textContent = message;
-            
-            // Reset position and opacity for transition
             msgDiv.classList.remove('opacity-0', 'translate-x-1/2');
             msgDiv.classList.add('opacity-100', 'translate-x-0');
-            
-            // Fade out and remove
             setTimeout(() => {
                 msgDiv.classList.remove('opacity-100', 'translate-x-0');
                 msgDiv.classList.add('opacity-0', 'translate-x-1/2');
@@ -306,15 +296,11 @@
         // --- Screenshot Protection Functions ---
 
         function applyScreenProtection() {
-            // 1. Disable right-click context menu on the main canvas (most common way to 'Save Image As')
             canvas.oncontextmenu = (e) => {
                 e.preventDefault();
                 showMessageBox("Screenshot features are restricted until unlocked!");
             };
-            
-            // 2. Disable print shortcut (Ctrl/Cmd + P) on the entire window
             window.onkeydown = (e) => {
-                // Check for Ctrl+P (Windows/Linux) or Cmd+P (Mac)
                 if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
                     e.preventDefault();
                     showMessageBox("Printing is disabled due to the daily limit. Please unlock!");
@@ -324,8 +310,8 @@
         }
 
         function removeScreenProtection() {
-            canvas.oncontextmenu = null; // Re-enable right-click
-            window.onkeydown = null; // Re-enable print
+            canvas.oncontextmenu = null;
+            window.onkeydown = null;
         }
 
         // --- Limit Handling Functions ---
@@ -353,15 +339,10 @@
             if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
                 return;
             }
-            
             let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
             count += 1;
             localStorage.setItem(COUNT_KEY, count.toString());
-
-            // Check if the new count hits the limit
-            if (count >= DAILY_LIMIT) {
-                updateDownloadButtonState();
-            }
+            if (count >= DAILY_LIMIT) updateDownloadButtonState();
         }
 
         function showLimitMessage() {
@@ -378,11 +359,10 @@
             const status = checkDailyLimit();
             if (status.allowed) {
                 hideLimitMessage();
-                removeScreenProtection(); // *** Remove protection when allowed ***
+                removeScreenProtection();
                 if (status.count === 'Unlimited') {
                     downloadBtn.textContent = 'Download Meme (Unlimited)';
                 } else {
-                    // Show current usage
                     downloadBtn.textContent = `Download Meme (PNG) (${status.count}/${DAILY_LIMIT} Used)`;
                 }
                 downloadBtn.disabled = false;
@@ -390,7 +370,7 @@
                 downloadBtn.textContent = 'Download Meme (Limit Reached)';
                 downloadBtn.disabled = true;
                 showLimitMessage();
-                applyScreenProtection(); // *** Apply protection when locked ***
+                applyScreenProtection();
             }
         }
 
@@ -399,14 +379,11 @@
             if (code === SECRET_CODE) {
                 localStorage.setItem(UNLIMITED_KEY, 'true');
                 passwordError.classList.add('hidden');
-                
                 limitMessageDiv.innerHTML = '<p class="font-bold text-green-700">Success! You now have UNLIMITED generations! Enjoy! 🎉</p>';
-                
-                removeScreenProtection(); // Remove protection on successful unlock
+                removeScreenProtection();
                 updateDownloadButtonState();
                 downloadBtn.disabled = false;
                 downloadBtn.classList.remove('hidden');
-
             } else {
                 passwordError.classList.remove('hidden');
                 secretPasswordInput.value = '';
@@ -424,7 +401,7 @@
             }
         }
 
-        // --- Core Functions (Unchanged) ---
+        // --- Core Functions ---
 
         function updateText() {
             let text = textInput.value.trim();
@@ -456,14 +433,11 @@
         function toggleTextColor() {
             activeSpecialStyle = null; 
             deactivateStyleButtons();
-            
             isWhiteText = !isWhiteText;
             const color = isWhiteText ? '#ffffff' : '#000000';
             const textLabel = isWhiteText ? 'White Text' : 'Black Text';
-
             applyTextColor(color);
             textColorBtn.textContent = textLabel;
-            
             textColorBtn.classList.toggle('bg-black', !isWhiteText);
             textColorBtn.classList.toggle('text-white', !isWhiteText);
             textColorBtn.classList.toggle('bg-white', isWhiteText);
@@ -472,9 +446,7 @@
         
         function toggleOutline() {
             currentOutlineState = (currentOutlineState + 1) % outlineClasses.length;
-            
             outputDiv.classList.remove(...outlineClasses.filter(c => c !== '')); 
-            
             const newClass = outlineClasses[currentOutlineState];
             if (newClass) {
                 outputDiv.classList.add(newClass);
@@ -492,10 +464,8 @@
                     textColorBtn.classList.remove('bg-black', 'text-white');
                 }
             }
-
             outlineToggleBtn.textContent = outlineLabels[currentOutlineState];
             outlineToggleBtn.classList.remove('bg-gray-200', 'bg-white', 'bg-black', 'text-gray-800', 'text-white', 'border-gray-400', 'border-black', 'border-white');
-            
             if (currentOutlineState === 0) {
                 outlineToggleBtn.classList.add('bg-gray-200', 'text-gray-800', 'border-gray-400');
             } else if (currentOutlineState === 1) { 
@@ -507,7 +477,6 @@
 
         function toggleCase() {
             isUppercase = !isUppercase;
-            
             if (isUppercase) {
                 outputDiv.classList.add('uppercase');
                 caseToggleBtn.textContent = 'Normal Case';
@@ -524,10 +493,8 @@
         function applyFontSize(size) {
             currentFontSize = Math.min(size, 62);
             fontSizeInput.value = currentFontSize; 
-            
             outputDiv.style.fontSize = `${currentFontSize}px`;
             fontSizeValue.textContent = `${currentFontSize}px`;
-            
             outputDiv.style.lineHeight = (currentFontStyle === 'font-handwritten') ? '1.1' : '1.0';
         }
 
@@ -538,7 +505,6 @@
 
         function createColorButtons() {
             colorSelector.innerHTML = '';
-            
             colors.forEach((color, index) => {
                 const button = document.createElement('button');
                 button.className = `w-8 h-8 rounded-full shadow-md transition duration-150 transform hover:scale-110 ${color.border} border-2`;
@@ -549,15 +515,11 @@
                     deactivateStyleButtons();
                     applyColor(color.value);
                     applyTextColor(isWhiteText ? '#ffffff' : '#000000');
-                    
-                    document.querySelectorAll('#color-selector button').forEach(btn => {
-                        btn.style.borderWidth = '2px';
-                    });
+                    document.querySelectorAll('#color-selector button').forEach(btn => { btn.style.borderWidth = '2px'; });
                     button.style.borderWidth = '4px'; 
                     currentActiveColorButton = button;
                 };
                 colorSelector.appendChild(button);
-
                 if (index === 1) { 
                     button.style.borderWidth = '4px';
                     currentActiveColorButton = button;
@@ -575,26 +537,18 @@
 
         function setSpecialStyle(styleName, styleButton) {
             if (styleName !== 'blue-red') return;
-            
             document.querySelectorAll('#color-selector button').forEach(btn => btn.style.borderWidth = '2px');
-
             if (activeSpecialStyle === styleName) {
                 activeSpecialStyle = null;
                 deactivateStyleButtons();
                 applyColor(colors[1].value); 
                 applyTextColor(colors[2].value); 
-                
                 const defaultColorButton = colorSelector.querySelector(`button[title="${colors[1].name}"]`);
-                if(defaultColorButton) {
-                    defaultColorButton.style.borderWidth = '4px';
-                    currentActiveColorButton = defaultColorButton;
-                }
-                
+                if(defaultColorButton) { defaultColorButton.style.borderWidth = '4px'; currentActiveColorButton = defaultColorButton; }
             } else {
                 activeSpecialStyle = styleName;
                 deactivateStyleButtons();
                 styleButton.classList.add('ring-4', 'ring-offset-2', 'ring-red-700');
-                
                 applyColor('#1d4ed8'); 
                 applyTextColor('#ef4444'); 
             }
@@ -611,35 +565,27 @@
             }
         }
 
-
         function randomizePlacement() {
             resetPlacement(); 
-            
             const lines = outputDiv.textContent.split('\n');
             outputDiv.innerHTML = ''; 
-
             lines.forEach(line => {
                 const span = document.createElement('span');
                 span.textContent = line.trim();
-
                 const randomMarginLeft = Math.floor(Math.random() * 21) - 10;
                 const randomMarginRight = Math.floor(Math.random() * 21) - 10;
                 const randomPaddingTop = Math.floor(Math.random() * 11);
                 const randomPaddingBottom = Math.floor(Math.random() * 11);
-
                 span.style.display = 'block'; 
                 span.style.marginLeft = `${randomMarginLeft}px`;
                 span.style.marginRight = `${randomMarginRight}px`;
                 span.style.paddingTop = `${randomPaddingTop}px`;
                 span.style.paddingBottom = `${randomPaddingBottom}px`;
-                
                 span.className = outputDiv.className; 
                 span.style.cssText += outputDiv.style.cssText; 
                 span.style.color = currentTextColor;
-                
                 outputDiv.appendChild(span);
             });
-            
             randomizeBtn.textContent = 'Reset Placement';
             randomizeBtn.classList.replace('bg-orange-500', 'bg-gray-500');
             randomizeBtn.classList.replace('hover:bg-orange-600', 'hover:bg-gray-600');
@@ -651,62 +597,54 @@
                  text = "Brat and it's the same but there's three more songs so it's not";
             }
             outputDiv.textContent = text;
-            
             randomizeBtn.textContent = 'Randomize Placement';
             randomizeBtn.classList.replace('bg-gray-500', 'bg-orange-500');
             randomizeBtn.classList.replace('hover:bg-gray-600', 'hover:bg-orange-600');
-            
             applyFontStyle(currentFontStyle); 
             applyFontSize(currentFontSize);
             if(isUppercase) { outputDiv.classList.add('uppercase'); }
-            
             applyActiveStyle();
         }
         
-        // --- New: robust download helper and updated handleDownload (minimal change) ---
-        function saveBlobWithFallback(blob, fileName) {
-            try {
-                const file = new File([blob], fileName, { type: blob.type });
-
-                // 1) Web Share API with Files (best on modern mobile browsers)
-                if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
-                    navigator.share({ files: [file], title: fileName, text: 'Here is your Brat meme' })
-                        .catch(err => {
-                            // fallback to open in new tab
-                            const url = URL.createObjectURL(blob);
-                            window.open(url, '_blank');
-                            setTimeout(() => URL.revokeObjectURL(url), 5000);
-                        });
-                    return;
+        // --- Download helper: OPEN IN NEW TAB on all devices (as requested) ---
+        // This function will open the generated image in a new tab/window.
+        // It still prefers toBlob -> createObjectURL where possible; falls back to dataURL.
+        function openImageInNewTab(blobOrDataUrl, isBlob, fileName) {
+            if (isBlob) {
+                const url = URL.createObjectURL(blobOrDataUrl);
+                const win = window.open(url, '_blank');
+                if (!win) {
+                    // popup blocked -> create a temp anchor (still will open in the same tab or prompt)
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
                 }
-
-                // 2) iOS/Safari fallback: open blob in new tab so user can long-press -> Save Image
-                const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform));
-                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-                if (isIOS || isSafari) {
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                    setTimeout(() => URL.revokeObjectURL(url), 5000);
-                    return;
-                }
-
-                // 3) Desktop fallback: anchor download
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-                link.href = url;
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(url), 150);
-            } catch (e) {
-                console.error('saveBlobWithFallback error', e);
-                const url = URL.createObjectURL(blob);
-                window.open(url, '_blank');
+                // revoke later
                 setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } else {
+                // data URL
+                const win = window.open();
+                if (win) {
+                    // write an image to the new tab so user can long-press/save or right-click -> Save Image
+                    win.document.write('<title>Brat Meme</title><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;" />');
+                    win.document.close();
+                } else {
+                    // popup blocked, fallback to anchor download (still tries)
+                    const link = document.createElement('a');
+                    link.href = blobOrDataUrl;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
             }
         }
 
+        // Robust handleDownload: create canvas, try toBlob, fallback to toDataURL.
         function handleDownload() {
             const status = checkDailyLimit();
             if (!status.allowed) {
@@ -715,25 +653,52 @@
                 return;
             }
 
+            console.log('handleDownload: starting capture');
             const originalBodyBackgroundColor = document.body.style.backgroundColor;
             document.body.style.backgroundColor = canvas.style.backgroundColor || currentBackgroundColor;
 
             html2canvas(canvas, { allowTaint: true, useCORS: true, scale: 2 })
                 .then(canvasImage => {
-                    canvasImage.toBlob(function(blob) {
-                        if (!blob) {
-                            showMessageBox('Failed to prepare image for download.');
-                            return;
-                        }
-                        const fileName = 'brat_meme_' + Date.now() + '.png';
-                        saveBlobWithFallback(blob, fileName);
+                    console.log('handleDownload: canvas created');
+                    let handled = false;
 
-                        incrementCount();
-                        updateDownloadButtonState();
-                    }, 'image/png');
+                    try {
+                        canvasImage.toBlob(function(blob) {
+                            if (blob && blob.size > 0) {
+                                console.log('handleDownload: got blob, opening in new tab');
+                                const fileName = 'brat_meme_' + Date.now() + '.png';
+                                openImageInNewTab(blob, true, fileName);
+                                incrementCount();
+                                updateDownloadButtonState();
+                                showMessageBox('Image opened in a new tab. Save it from there.');
+                                handled = true;
+                            } else {
+                                console.warn('handleDownload: toBlob produced null/empty blob; will fallback');
+                            }
+                        }, 'image/png');
+                    } catch (err) {
+                        console.warn('handleDownload: toBlob threw, will fallback to dataURL', err);
+                    }
+
+                    // If toBlob didn't finish within 700ms, fallback to toDataURL
+                    setTimeout(() => {
+                        if (!handled) {
+                            try {
+                                const dataUrl = canvasImage.toDataURL('image/png');
+                                console.log('handleDownload: using toDataURL fallback, opening new tab');
+                                openImageInNewTab(dataUrl, false, 'brat_meme_' + Date.now() + '.png');
+                                incrementCount();
+                                updateDownloadButtonState();
+                                showMessageBox('Image opened in a new tab. Save it from there.');
+                            } catch (e) {
+                                console.error('handleDownload: fallback toDataURL failed', e);
+                                showMessageBox('Download failed. Check console for details.');
+                            }
+                        }
+                    }, 700);
                 })
                 .catch(error => {
-                    console.error('Error generating image:', error);
+                    console.error('handleDownload: html2canvas error', error);
                     showMessageBox('Image generation failed. Check console for details.');
                 })
                 .finally(() => {
@@ -742,7 +707,6 @@
         }
 
         // --- Event Listeners ---
-
         textInput.addEventListener('input', updateText);
         textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
         textColorBtn.addEventListener('click', toggleTextColor);
@@ -775,14 +739,12 @@
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             createColorButtons();
-            
             currentFontSize = 62;
             fontSizeInput.value = 62;
-
             updateText();
             applyFontSize(currentFontSize); 
             applyBorderRadius(parseInt(borderRadiusInput.value));
-            updateDownloadButtonState(); // Check limit and apply/remove protection on load
+            updateDownloadButtonState();
         });
 
     </script>
