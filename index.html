@@ -67,41 +67,31 @@
         }
     </style>
 </head>
-<!-- Background color: #fae6f0 (soft pink) -->
 <body class="min-h-screen p-4 flex flex-col items-center font-inter" style="background-color: #fae6f0;">
 
     <div class="max-w-xl w-full">
-        <!-- Professional Header -->
         <header class="text-center mb-6">
             <h1 class="text-4xl font-extrabold text-black tracking-tight leading-tight">
                 Brat Text Generator
             </h1>
-            <!-- Darker Pink + Glow effect -->
             <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
         </header>
 
-        <!-- The Meme Canvas (Area to be captured) -->
-        <!-- Default canvas background color is a slightly deeper pink: #fce7f3 -->
         <div id="meme-canvas" class="w-full aspect-square flex items-center justify-center p-4 shadow-xl mb-6 transition-colors duration-300"
              style="background-color: #fce7f3; min-height: 350px; border-radius: 12px;">
-
             <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words" style="color: #000;">
                 Brat and it's the same but there's three more songs so it's not
             </div>
         </div>
 
-        <!-- Text Input & Controls -->
         <div class="bg-white p-4 rounded-xl shadow-lg space-y-4">
-            <!-- Text Input -->
             <div>
                 <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text (Use Enter for New Lines):</label>
                 <textarea id="text-input" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-base"
                           placeholder="Type your meme text here..."></textarea>
             </div>
 
-            <!-- Specialized Styles -->
             <div class="grid grid-cols-2 gap-3 pt-2">
-                <!-- Green Scratched Style is removed and disabled -->
                 <button id="style-green-btn" class="w-full py-2 px-4 bg-lime-500 text-black font-semibold rounded-lg shadow-md transition duration-150 text-sm opacity-50 cursor-not-allowed" disabled>
                     Green Scratched Style (Removed)
                 </button>
@@ -110,10 +100,7 @@
                 </button>
             </div>
             
-            <!-- Main Style Controls (Font, Case, Color, NEW: Outline) -->
             <div class="grid grid-cols-3 gap-3">
-                
-                <!-- Text Style Selector -->
                 <div class="col-span-3 sm:col-span-1">
                     <label for="text-style" class="block text-sm font-medium text-gray-700 mb-1">Text Style:</label>
                     <select id="text-style" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-sm appearance-none">
@@ -123,7 +110,6 @@
                     </select>
                 </div>
                 
-                <!-- Text Color Toggle -->
                 <div class="col-span-2 sm:col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Text Color:</label>
                     <button id="text-color-btn" class="w-full p-2 bg-black text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition duration-150 text-sm border-2 border-black">
@@ -131,7 +117,6 @@
                     </button>
                 </div>
 
-                <!-- Case Transformer Toggle -->
                 <div class="col-span-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Case:</label>
                     <button id="case-toggle-btn" class="w-full p-2 bg-purple-500 text-white font-semibold rounded-lg shadow-md hover:bg-purple-600 transition duration-150 text-sm">
@@ -140,7 +125,6 @@
                 </div>
             </div>
             
-            <!-- Text Outline Control -->
             <div class="w-full">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Text Outline (Stroke):</label>
                 <button id="outline-toggle-btn" class="w-full p-2 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 transition duration-150 text-sm border-2 border-gray-400">
@@ -148,33 +132,25 @@
                 </button>
             </div>
 
-            <!-- Color Selector -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Background Color:</label>
-                <div id="color-selector" class="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg justify-center sm:justify-start">
-                    <!-- Color Buttons will be injected here -->
-                </div>
+                <div id="color-selector" class="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg justify-center sm:justify-start"></div>
             </div>
 
-
-            <!-- Extra Features (Randomize & Sliders) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Randomize Button -->
                 <div class="md:col-span-1">
-                     <label class="block text-sm font-medium text-transparent mb-1 select-none">Action</label>
+                    <label class="block text-sm font-medium text-transparent mb-1 select-none">Action</label>
                     <button id="randomize-btn" class="w-full py-2 px-4 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600 transition duration-150 text-sm">
                         Randomize Placement
                     </button>
                 </div>
                 
-                <!-- Font Size Slider (MAX 62px) -->
                 <div>
                     <label for="font-size" class="block text-sm font-medium text-gray-700 mb-1">Font Size (Max 62px)</label>
                     <input type="range" id="font-size" min="30" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
                     <span id="font-size-value" class="text-xs text-gray-500 block text-center mt-1">62px</span>
                 </div>
                 
-                <!-- Border Radius Slider -->
                 <div>
                     <label for="border-radius" class="block text-sm font-medium text-gray-700 mb-1">Border Radius</label>
                     <input type="range" id="border-radius" min="0" max="50" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
@@ -182,35 +158,26 @@
                 </div>
             </div>
 
-            <!-- Download Button -->
             <button id="download-btn" class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
                 Download Meme (PNG)
             </button>
             
-            <!-- Limit Exceeded Message and Password (Hidden by Default) -->
             <div id="limit-message" class="hidden text-center p-4 bg-red-100 border border-red-400 rounded-lg space-y-3">
                 <p class="font-bold text-red-700">Opps... You have hit the limit for today ask the secret code from abhi 🤫</p>
                 <div class="flex space-x-2">
                     <div class="relative flex-grow">
                         <input type="password" id="secret-password" placeholder="Enter Secret Code" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-base">
-                        <button id="show-password-btn" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 text-sm" type="button">
-                            Show
-                        </button>
+                        <button id="show-password-btn" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 text-sm" type="button">Show</button>
                     </div>
-                    <button id="unlock-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-150">
-                        Unlock Unlimited
-                    </button>
+                    <button id="unlock-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-150">Unlock Unlimited</button>
                 </div>
                 <p id="password-error" class="text-sm text-red-500 hidden">Incorrect code. Try again!</p>
             </div>
         </div>
 
-        <p class="text-center text-xs text-gray-500 mt-4">
-            *Ensure your text and background colors provide enough contrast.
-        </p>
+        <p class="text-center text-xs text-gray-500 mt-4">*Ensure your text and background colors provide enough contrast.</p>
     </div>
     
-    <!-- Custom Footer with updated text -->
     <footer class="mt-6 pb-6 text-center text-sm text-gray-600">
         © 2025 Crafted with <span class="text-red-500">💖</span> by Abhi for the Meme Geeks
     </footer>
@@ -245,7 +212,6 @@
         const DATE_KEY = 'bratGenerator_lastDate';
         const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
         
-        // Outline States (0: None, 1: White, 2: Black)
         let currentOutlineState = 0; 
         const outlineClasses = ['', 'text-outline-white', 'text-outline-black'];
         const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
@@ -272,9 +238,6 @@
         let currentTextColor = colors[2].value; // Black
         let currentActiveColorButton = null;
 
-
-        // --- Message Box Utility ---
-
         function showMessageBox(message) {
             let msgDiv = document.getElementById('temp-message-box');
             if (!msgDiv) {
@@ -292,8 +255,6 @@
                 setTimeout(() => msgDiv.remove(), 300);
             }, 3000);
         }
-
-        // --- Screenshot Protection Functions ---
 
         function applyScreenProtection() {
             canvas.oncontextmenu = (e) => {
@@ -314,23 +275,18 @@
             window.onkeydown = null;
         }
 
-        // --- Limit Handling Functions ---
-
         function checkDailyLimit() {
             if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
                 return { allowed: true, count: 'Unlimited' };
             }
-
             const today = new Date().toDateString();
             const lastDate = localStorage.getItem(DATE_KEY);
             let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
-
             if (lastDate !== today) {
                 count = 0;
                 localStorage.setItem(COUNT_KEY, '0');
                 localStorage.setItem(DATE_KEY, today);
             }
-
             const allowed = count < DAILY_LIMIT;
             return { allowed: allowed, count: count };
         }
@@ -400,8 +356,6 @@
                 showPasswordBtn.textContent = 'Show';
             }
         }
-
-        // --- Core Functions ---
 
         function updateText() {
             let text = textInput.value.trim();
@@ -606,45 +560,29 @@
             applyActiveStyle();
         }
         
-        // --- Download helper: OPEN IN NEW TAB on all devices (as requested) ---
-        // This function will open the generated image in a new tab/window.
-        // It still prefers toBlob -> createObjectURL where possible; falls back to dataURL.
-        function openImageInNewTab(blobOrDataUrl, isBlob, fileName) {
-            if (isBlob) {
-                const url = URL.createObjectURL(blobOrDataUrl);
-                const win = window.open(url, '_blank');
-                if (!win) {
-                    // popup blocked -> create a temp anchor (still will open in the same tab or prompt)
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.target = '_blank';
-                    a.rel = 'noopener';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-                // revoke later
-                setTimeout(() => URL.revokeObjectURL(url), 5000);
-            } else {
-                // data URL
-                const win = window.open();
-                if (win) {
-                    // write an image to the new tab so user can long-press/save or right-click -> Save Image
-                    win.document.write('<title>Brat Meme</title><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;" />');
-                    win.document.close();
+        // --- Synchronous-open download flow to avoid popup blocking ---
+        function openImageInNewTabFromWindow(winRef, blobOrDataUrl, isBlob, fileName) {
+            try {
+                if (winRef && !winRef.closed) {
+                    if (isBlob) {
+                        const url = URL.createObjectURL(blobOrDataUrl);
+                        winRef.location.href = url;
+                        setTimeout(() => URL.revokeObjectURL(url), 6000);
+                    } else {
+                        winRef.document.open();
+                        winRef.document.write('<!doctype html><html><head><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;display:block;" /></body></html>');
+                        winRef.document.close();
+                    }
+                    return true;
                 } else {
-                    // popup blocked, fallback to anchor download (still tries)
-                    const link = document.createElement('a');
-                    link.href = blobOrDataUrl;
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    return false;
                 }
+            } catch (e) {
+                console.error('openImageInNewTabFromWindow error', e);
+                return false;
             }
         }
 
-        // Robust handleDownload: create canvas, try toBlob, fallback to toDataURL.
         function handleDownload() {
             const status = checkDailyLimit();
             if (!status.allowed) {
@@ -653,60 +591,86 @@
                 return;
             }
 
-            console.log('handleDownload: starting capture');
+            // Open a blank window synchronously to avoid popup blocking
+            const newWin = window.open('', '_blank');
+
             const originalBodyBackgroundColor = document.body.style.backgroundColor;
             document.body.style.backgroundColor = canvas.style.backgroundColor || currentBackgroundColor;
 
             html2canvas(canvas, { allowTaint: true, useCORS: true, scale: 2 })
                 .then(canvasImage => {
-                    console.log('handleDownload: canvas created');
-                    let handled = false;
-
+                    let blobHandled = false;
                     try {
                         canvasImage.toBlob(function(blob) {
                             if (blob && blob.size > 0) {
-                                console.log('handleDownload: got blob, opening in new tab');
                                 const fileName = 'brat_meme_' + Date.now() + '.png';
-                                openImageInNewTab(blob, true, fileName);
+                                const opened = openImageInNewTabFromWindow(newWin, blob, true, fileName);
+                                if (!opened) {
+                                    const url = URL.createObjectURL(blob);
+                                    const fallbackWin = window.open(url, '_blank');
+                                    setTimeout(() => URL.revokeObjectURL(url), 6000);
+                                    if (!fallbackWin) {
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = fileName;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        document.body.removeChild(a);
+                                        URL.revokeObjectURL(url);
+                                    }
+                                }
                                 incrementCount();
                                 updateDownloadButtonState();
                                 showMessageBox('Image opened in a new tab. Save it from there.');
-                                handled = true;
+                                blobHandled = true;
                             } else {
-                                console.warn('handleDownload: toBlob produced null/empty blob; will fallback');
+                                console.warn('toBlob returned null/empty blob — will fallback to dataURL');
                             }
                         }, 'image/png');
                     } catch (err) {
-                        console.warn('handleDownload: toBlob threw, will fallback to dataURL', err);
+                        console.warn('toBlob threw an error, will fallback to toDataURL', err);
                     }
 
-                    // If toBlob didn't finish within 700ms, fallback to toDataURL
                     setTimeout(() => {
-                        if (!handled) {
+                        if (!blobHandled) {
                             try {
                                 const dataUrl = canvasImage.toDataURL('image/png');
-                                console.log('handleDownload: using toDataURL fallback, opening new tab');
-                                openImageInNewTab(dataUrl, false, 'brat_meme_' + Date.now() + '.png');
+                                const opened = openImageInNewTabFromWindow(newWin, dataUrl, false, 'brat_meme_' + Date.now() + '.png');
+                                if (!opened) {
+                                    const fallbackWin = window.open();
+                                    if (fallbackWin) {
+                                        fallbackWin.document.write('<!doctype html><html><head><title>Brat Meme</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + dataUrl + '" style="max-width:100%;height:auto;display:block;" /></body></html>');
+                                        fallbackWin.document.close();
+                                    } else {
+                                        const link = document.createElement('a');
+                                        link.href = dataUrl;
+                                        link.download = 'brat_meme_' + Date.now() + '.png';
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                    }
+                                }
                                 incrementCount();
                                 updateDownloadButtonState();
                                 showMessageBox('Image opened in a new tab. Save it from there.');
                             } catch (e) {
-                                console.error('handleDownload: fallback toDataURL failed', e);
+                                console.error('Fallback toDataURL failed:', e);
                                 showMessageBox('Download failed. Check console for details.');
                             }
                         }
                     }, 700);
                 })
                 .catch(error => {
-                    console.error('handleDownload: html2canvas error', error);
+                    console.error('html2canvas error:', error);
                     showMessageBox('Image generation failed. Check console for details.');
+                    try { if (newWin && !newWin.closed) newWin.close(); } catch(e) {}
                 })
                 .finally(() => {
                     document.body.style.backgroundColor = originalBodyBackgroundColor;
                 });
         }
 
-        // --- Event Listeners ---
+        // --- Event listeners ---
         textInput.addEventListener('input', updateText);
         textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
         textColorBtn.addEventListener('click', toggleTextColor);
@@ -736,7 +700,6 @@
             }
         });
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             createColorButtons();
             currentFontSize = 62;
@@ -746,7 +709,6 @@
             applyBorderRadius(parseInt(borderRadiusInput.value));
             updateDownloadButtonState();
         });
-
     </script>
 </body>
 </html>
