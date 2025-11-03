@@ -560,22 +560,25 @@
             applyActiveStyle();
         }
         
-        // --- Synchronous-open download flow to avoid popup blocking ---
+        // --- Synchronous-open download flow: write HTML into opened window (works on Chrome Android) ---
         function openImageInNewTabFromWindow(winRef, blobOrDataUrl, isBlob, fileName) {
             try {
-                if (winRef && !winRef.closed) {
-                    if (isBlob) {
-                        const url = URL.createObjectURL(blobOrDataUrl);
-                        winRef.location.href = url;
-                        setTimeout(() => URL.revokeObjectURL(url), 6000);
-                    } else {
-                        winRef.document.open();
-                        winRef.document.write('<!doctype html><html><head><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;display:block;" /></body></html>');
-                        winRef.document.close();
-                    }
+                if (!winRef || winRef.closed) return false;
+
+                if (isBlob) {
+                    const url = URL.createObjectURL(blobOrDataUrl);
+                    const html = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + url + '" style="max-width:100%;height:auto;display:block;" alt="Brat Meme" /></body></html>';
+                    winRef.document.open();
+                    winRef.document.write(html);
+                    winRef.document.close();
+                    setTimeout(() => URL.revokeObjectURL(url), 8000);
                     return true;
                 } else {
-                    return false;
+                    const html = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;display:block;" alt="Brat Meme" /></body></html>';
+                    winRef.document.open();
+                    winRef.document.write(html);
+                    winRef.document.close();
+                    return true;
                 }
             } catch (e) {
                 console.error('openImageInNewTabFromWindow error', e);
@@ -591,7 +594,7 @@
                 return;
             }
 
-            // Open a blank window synchronously to avoid popup blocking
+            // Open a blank window synchronously (avoids popup blocking on mobile Chrome)
             const newWin = window.open('', '_blank');
 
             const originalBodyBackgroundColor = document.body.style.backgroundColor;
