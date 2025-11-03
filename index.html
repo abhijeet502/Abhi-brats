@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Brat Meme Generator</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -192,7 +192,7 @@
                 <p class="font-bold text-red-700">Opps... You have hit the limit for today ask the secret code from abhi 🤫</p>
                 <div class="flex space-x-2">
                     <div class="relative flex-grow">
-                        <input type="password" id="secret-password" placeholder="Enter Secret Code" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-base pr-10">
+                        <input type="password" id="secret-password" placeholder="Enter Secret Code" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-base">
                         <button id="show-password-btn" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 text-sm" type="button">
                             Show
                         </button>
@@ -239,9 +239,10 @@
         const showPasswordBtn = document.getElementById('show-password-btn');
 
         // --- Configuration ---
-        // NEW STRICT LIMIT: Only 1 free use allowed before password required
-        const DAILY_LIMIT = 1; 
-        const SECRET_CODE = 'ABHIJEET012';
+        // Changed daily limit from 1 to 2 per your request
+        const DAILY_LIMIT = 2; 
+        // Updated secret code as requested
+        const SECRET_CODE = 'ABHIJEET0123';
         const COUNT_KEY = 'bratGenerator_dailyCount';
         const DATE_KEY = 'bratGenerator_lastDate';
         const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
@@ -261,7 +262,9 @@
             { name: 'Yellow', value: '#fde047', border: 'border-yellow-600' },
             { name: 'Red', value: '#fca5a5', border: 'border-red-600' },
             { name: 'Orange', value: '#fed7aa', border: 'border-orange-600' },
-            { name: 'Green', value: '#d9f99d', border: 'border-green-600' }
+            { name: 'Green', value: '#d9f99d', border: 'border-green-600' },
+            // Added the requested darker green
+            { name: 'Dark Green', value: '#065f46', border: 'border-green-800' }
         ];
 
         // Initial settings now default to the distinct pink (#fce7f3) canvas background
@@ -355,7 +358,7 @@
             count += 1;
             localStorage.setItem(COUNT_KEY, count.toString());
 
-            // Check if the new count hits the limit (1/1)
+            // Check if the new count hits the limit
             if (count >= DAILY_LIMIT) {
                 updateDownloadButtonState();
             }
@@ -379,7 +382,7 @@
                 if (status.count === 'Unlimited') {
                     downloadBtn.textContent = 'Download Meme (Unlimited)';
                 } else {
-                    // Correctly displays 0/1 used
+                    // Show current usage
                     downloadBtn.textContent = `Download Meme (PNG) (${status.count}/${DAILY_LIMIT} Used)`;
                 }
                 downloadBtn.disabled = false;
@@ -660,6 +663,50 @@
             applyActiveStyle();
         }
         
+        // --- New: robust download helper and updated handleDownload (minimal change) ---
+        function saveBlobWithFallback(blob, fileName) {
+            try {
+                const file = new File([blob], fileName, { type: blob.type });
+
+                // 1) Web Share API with Files (best on modern mobile browsers)
+                if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share) {
+                    navigator.share({ files: [file], title: fileName, text: 'Here is your Brat meme' })
+                        .catch(err => {
+                            // fallback to open in new tab
+                            const url = URL.createObjectURL(blob);
+                            window.open(url, '_blank');
+                            setTimeout(() => URL.revokeObjectURL(url), 5000);
+                        });
+                    return;
+                }
+
+                // 2) iOS/Safari fallback: open blob in new tab so user can long-press -> Save Image
+                const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) || (navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform));
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                if (isIOS || isSafari) {
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+                    return;
+                }
+
+                // 3) Desktop fallback: anchor download
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 150);
+            } catch (e) {
+                console.error('saveBlobWithFallback error', e);
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            }
+        }
+
         function handleDownload() {
             const status = checkDailyLimit();
             if (!status.allowed) {
@@ -669,33 +716,29 @@
             }
 
             const originalBodyBackgroundColor = document.body.style.backgroundColor;
-            document.body.style.backgroundColor = canvas.style.backgroundColor;
+            document.body.style.backgroundColor = canvas.style.backgroundColor || currentBackgroundColor;
 
-            html2canvas(canvas, {
-                allowTaint: true,
-                useCORS: true,
-                scale: 2 
-            }).then(canvasImage => {
-                canvasImage.toBlob(function(blob) {
-                    const link = document.createElement('a');
-                    link.download = 'brat_meme_' + Date.now() + '.png';
-                    link.href = URL.createObjectURL(blob);
-                    
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href); 
+            html2canvas(canvas, { allowTaint: true, useCORS: true, scale: 2 })
+                .then(canvasImage => {
+                    canvasImage.toBlob(function(blob) {
+                        if (!blob) {
+                            showMessageBox('Failed to prepare image for download.');
+                            return;
+                        }
+                        const fileName = 'brat_meme_' + Date.now() + '.png';
+                        saveBlobWithFallback(blob, fileName);
 
-                    incrementCount();
-                    updateDownloadButtonState();
-                }, 'image/png');
-                
-            }).catch(error => {
-                console.error("Error generating image:", error);
-                showMessageBox("Image generation failed. Check console for details.");
-            }).finally(() => {
-                document.body.style.backgroundColor = originalBodyBackgroundColor;
-            });
+                        incrementCount();
+                        updateDownloadButtonState();
+                    }, 'image/png');
+                })
+                .catch(error => {
+                    console.error('Error generating image:', error);
+                    showMessageBox('Image generation failed. Check console for details.');
+                })
+                .finally(() => {
+                    document.body.style.backgroundColor = originalBodyBackgroundColor;
+                });
         }
 
         // --- Event Listeners ---
@@ -745,4 +788,3 @@
     </script>
 </body>
 </html>
-
