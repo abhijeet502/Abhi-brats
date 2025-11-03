@@ -1,717 +1,479 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Brat Meme Generator</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load html2canvas for screenshot functionality -->
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.hertzen.min.js"></script>
-    <!-- Load a custom font for the Handwritten style -->
-    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
-    <style>
-        /* Define the core font styles */
-        .font-brat {
-            font-family: 'Arial Black', Impact, sans-serif;
-            font-weight: 900;
-        }
-        .font-monospace {
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .font-handwritten {
-            font-family: 'Permanent Marker', cursive;
-            font-weight: 400; /* Permanent Marker only has one weight */
-        }
-
-        /* General text styling applied to the output */
-        .brat-text {
-            line-height: 1.0; /* Tight line spacing */
-            word-break: break-word;
-            white-space: pre-wrap; /* Respects line breaks and spaces */
-            transition: color 0.1s;
-        }
-        
-        /* Text Outline/Stroke CSS */
-        .text-outline-white {
-            -webkit-text-stroke: 3px white;
-            text-stroke: 3px white;
-        }
-        .text-outline-black {
-            -webkit-text-stroke: 3px black;
-            text-stroke: 3px black;
-        }
-
-        /* Text shadow for a subtle glow effect on the credit line */
-        .text-glow-pink {
-            text-shadow: 0 0 3px rgba(255, 0, 100, 0.6), 0 0 6px rgba(255, 0, 150, 0.4);
-        }
-
-        /* Custom scrollbar for better aesthetics */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #a3a3a3;
-            border-radius: 4px;
-        }
-        /* Custom styling for the border-radius slider */
-        .range-pink-500::-webkit-slider-thumb {
-            background-color: #ec4899; /* pink-500 */
-        }
-        .range-pink-500::-moz-range-thumb {
-            background-color: #ec4899; /* pink-500 */
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Brat Meme Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.hertzen.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+  <style>
+    .font-brat { font-family: 'Arial Black', Impact, sans-serif; font-weight:900; }
+    .font-monospace { font-family: 'Courier New', Courier, monospace; }
+    .font-handwritten { font-family: 'Permanent Marker', cursive; font-weight:400; }
+    .brat-text { line-height:1.0; word-break:break-word; white-space:pre-wrap; transition:color .1s; }
+    .text-outline-white { -webkit-text-stroke:3px white; text-stroke:3px white; }
+    .text-outline-black { -webkit-text-stroke:3px black; text-stroke:3px black; }
+    .text-glow-pink { text-shadow:0 0 3px rgba(255,0,100,.6), 0 0 6px rgba(255,0,150,.4); }
+    ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#f1f1f1; } ::-webkit-scrollbar-thumb { background:#a3a3a3; border-radius:4px; }
+    .range-pink-500::-webkit-slider-thumb { background-color:#ec4899; } .range-pink-500::-moz-range-thumb { background-color:#ec4899; }
+    /* Presentation mode styles */
+    .presentation-body { display:flex; align-items:center; justify-content:center; height:100vh; margin:0; background:#fff; }
+    .presentation-canvas { box-shadow: none; border-radius:0 !important; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
+    /* Small top bar when in presentation */
+    .presentation-topbar { position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:60; background:rgba(255,255,255,.95); padding:.35rem .6rem; border-radius:999px; box-shadow:0 3px 8px rgba(0,0,0,.12); font-weight:600; }
+  </style>
 </head>
-<body class="min-h-screen p-4 flex flex-col items-center font-inter" style="background-color: #fae6f0;">
+<body class="min-h-screen p-4 flex flex-col items-center font-inter" style="background-color:#fae6f0;">
+  <div id="app" class="max-w-xl w-full">
+    <header id="top-header" class="text-center mb-6">
+      <h1 class="text-4xl font-extrabold text-black tracking-tight leading-tight">Brat Text Generator</h1>
+      <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
+    </header>
 
-    <div class="max-w-xl w-full">
-        <header class="text-center mb-6">
-            <h1 class="text-4xl font-extrabold text-black tracking-tight leading-tight">
-                Brat Text Generator
-            </h1>
-            <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
-        </header>
-
-        <div id="meme-canvas" class="w-full aspect-square flex items-center justify-center p-4 shadow-xl mb-6 transition-colors duration-300"
-             style="background-color: #fce7f3; min-height: 350px; border-radius: 12px;">
-            <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words" style="color: #000;">
-                Brat and it's the same but there's three more songs so it's not
-            </div>
+    <!-- Canvas -->
+    <div id="meme-wrap" class="w-full mb-6">
+      <div id="meme-canvas" class="w-full aspect-square flex items-center justify-center p-4 shadow-xl transition-colors duration-300"
+           style="background-color:#fce7f3; min-height:350px; border-radius:12px;">
+        <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words" style="color:#000;">
+          Brat and it's the same but there's three more songs so it's not
         </div>
-
-        <div class="bg-white p-4 rounded-xl shadow-lg space-y-4">
-            <div>
-                <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text (Use Enter for New Lines):</label>
-                <textarea id="text-input" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-base"
-                          placeholder="Type your meme text here..."></textarea>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 pt-2">
-                <button id="style-green-btn" class="w-full py-2 px-4 bg-lime-500 text-black font-semibold rounded-lg shadow-md transition duration-150 text-sm opacity-50 cursor-not-allowed" disabled>
-                    Green Scratched Style (Removed)
-                </button>
-                <button id="style-blue-red-btn" class="w-full py-2 px-4 bg-blue-600 text-red-400 font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 text-sm">
-                    Blue/Red Style
-                </button>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-3">
-                <div class="col-span-3 sm:col-span-1">
-                    <label for="text-style" class="block text-sm font-medium text-gray-700 mb-1">Text Style:</label>
-                    <select id="text-style" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-sm appearance-none">
-                        <option value="font-brat">Brat Style (Impact)</option>
-                        <option value="font-monospace">Monospace</option>
-                        <option value="font-handwritten">Handwritten</option>
-                    </select>
-                </div>
-                
-                <div class="col-span-2 sm:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Text Color:</label>
-                    <button id="text-color-btn" class="w-full p-2 bg-black text-white font-semibold rounded-lg shadow-md hover:opacity-90 transition duration-150 text-sm border-2 border-black">
-                        Black Text
-                    </button>
-                </div>
-
-                <div class="col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Case:</label>
-                    <button id="case-toggle-btn" class="w-full p-2 bg-purple-500 text-white font-semibold rounded-lg shadow-md hover:bg-purple-600 transition duration-150 text-sm">
-                        UPPERCASE
-                    </button>
-                </div>
-            </div>
-            
-            <div class="w-full">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Text Outline (Stroke):</label>
-                <button id="outline-toggle-btn" class="w-full p-2 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 transition duration-150 text-sm border-2 border-gray-400">
-                    No Outline
-                </button>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Background Color:</label>
-                <div id="color-selector" class="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg justify-center sm:justify-start"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="md:col-span-1">
-                    <label class="block text-sm font-medium text-transparent mb-1 select-none">Action</label>
-                    <button id="randomize-btn" class="w-full py-2 px-4 bg-orange-500 text-white font-semibold rounded-lg shadow-md hover:bg-orange-600 transition duration-150 text-sm">
-                        Randomize Placement
-                    </button>
-                </div>
-                
-                <div>
-                    <label for="font-size" class="block text-sm font-medium text-gray-700 mb-1">Font Size (Max 62px)</label>
-                    <input type="range" id="font-size" min="30" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
-                    <span id="font-size-value" class="text-xs text-gray-500 block text-center mt-1">62px</span>
-                </div>
-                
-                <div>
-                    <label for="border-radius" class="block text-sm font-medium text-gray-700 mb-1">Border Radius</label>
-                    <input type="range" id="border-radius" min="0" max="50" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
-                    <span id="border-radius-value" class="text-xs text-gray-500 block text-center mt-1">12px</span>
-                </div>
-            </div>
-
-            <button id="download-btn" class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
-                Download Meme (PNG)
-            </button>
-            
-            <div id="limit-message" class="hidden text-center p-4 bg-red-100 border border-red-400 rounded-lg space-y-3">
-                <p class="font-bold text-red-700">Opps... You have hit the limit for today ask the secret code from abhi 🤫</p>
-                <div class="flex space-x-2">
-                    <div class="relative flex-grow">
-                        <input type="password" id="secret-password" placeholder="Enter Secret Code" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-base">
-                        <button id="show-password-btn" class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700 text-sm" type="button">Show</button>
-                    </div>
-                    <button id="unlock-btn" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition duration-150">Unlock Unlimited</button>
-                </div>
-                <p id="password-error" class="text-sm text-red-500 hidden">Incorrect code. Try again!</p>
-            </div>
-        </div>
-
-        <p class="text-center text-xs text-gray-500 mt-4">*Ensure your text and background colors provide enough contrast.</p>
+      </div>
     </div>
-    
-    <footer class="mt-6 pb-6 text-center text-sm text-gray-600">
-        © 2025 Crafted with <span class="text-red-500">💖</span> by Abhi for the Meme Geeks
-    </footer>
 
-    <script>
-        const canvas = document.getElementById('meme-canvas');
-        const outputDiv = document.getElementById('brat-output');
-        const textInput = document.getElementById('text-input');
-        const colorSelector = document.getElementById('color-selector');
-        const downloadBtn = document.getElementById('download-btn');
-        const randomizeBtn = document.getElementById('randomize-btn');
-        const fontSizeInput = document.getElementById('font-size');
-        const fontSizeValue = document.getElementById('font-size-value');
-        const textStyleSelect = document.getElementById('text-style');
-        const textColorBtn = document.getElementById('text-color-btn');
-        const caseToggleBtn = document.getElementById('case-toggle-btn');
-        const outlineToggleBtn = document.getElementById('outline-toggle-btn');
-        const borderRadiusInput = document.getElementById('border-radius');
-        const borderRadiusValue = document.getElementById('border-radius-value');
-        const limitMessageDiv = document.getElementById('limit-message');
-        const secretPasswordInput = document.getElementById('secret-password');
-        const unlockBtn = document.getElementById('unlock-btn');
-        const passwordError = document.getElementById('password-error');
-        const styleGreenBtn = document.getElementById('style-green-btn'); 
-        const styleBlueRedBtn = document.getElementById('style-blue-red-btn');
-        const showPasswordBtn = document.getElementById('show-password-btn');
+    <!-- Controls panel -->
+    <div id="controls" class="bg-white p-4 rounded-xl shadow-lg space-y-4">
+      <div>
+        <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text (Use Enter for New Lines):</label>
+        <textarea id="text-input" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 text-base"
+                  placeholder="Type your meme text here..."></textarea>
+      </div>
 
-        // --- Configuration ---
-        const DAILY_LIMIT = 2; 
-        const SECRET_CODE = 'ABHIJEET0123';
-        const COUNT_KEY = 'bratGenerator_dailyCount';
-        const DATE_KEY = 'bratGenerator_lastDate';
-        const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
-        
-        let currentOutlineState = 0; 
-        const outlineClasses = ['', 'text-outline-white', 'text-outline-black'];
-        const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button id="style-green-btn" class="w-full py-2 px-4 bg-lime-500 text-black font-semibold rounded-lg shadow-md text-sm opacity-50 cursor-not-allowed" disabled>Green Scratched Style (Removed)</button>
+        <button id="style-blue-red-btn" class="w-full py-2 px-4 bg-blue-600 text-red-400 font-semibold rounded-lg shadow-md hover:bg-blue-700 text-sm">Blue/Red Style</button>
+      </div>
 
-        const colors = [
-            { name: 'Light Pink (UI)', value: '#fae6f0', border: 'border-pink-500' },
-            { name: 'Pink', value: '#fce7f3', border: 'border-pink-500' }, 
-            { name: 'Black', value: '#000000', border: 'border-white' },
-            { name: 'White', value: '#ffffff', border: 'border-gray-500' },
-            { name: 'Yellow', value: '#fde047', border: 'border-yellow-600' },
-            { name: 'Red', value: '#fca5a5', border: 'border-red-600' },
-            { name: 'Orange', value: '#fed7aa', border: 'border-orange-600' },
-            { name: 'Green', value: '#d9f99d', border: 'border-green-600' },
-            { name: 'Dark Green', value: '#065f46', border: 'border-green-800' }
-        ];
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Text Style:</label>
+          <select id="text-style" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+            <option value="font-brat">Brat Style (Impact)</option>
+            <option value="font-monospace">Monospace</option>
+            <option value="font-handwritten">Handwritten</option>
+          </select>
+        </div>
 
-        // Initial settings
-        let currentFontSize = 62;
-        let currentFontStyle = 'font-brat';
-        let isUppercase = false;
-        let isWhiteText = false;
-        let activeSpecialStyle = null; 
-        let currentBackgroundColor = colors[1].value; 
-        let currentTextColor = colors[2].value; // Black
-        let currentActiveColorButton = null;
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Text Color:</label>
+          <button id="text-color-btn" class="w-full p-2 bg-black text-white rounded-lg font-semibold text-sm border-2 border-black">Black Text</button>
+        </div>
 
-        function showMessageBox(message) {
-            let msgDiv = document.getElementById('temp-message-box');
-            if (!msgDiv) {
-                msgDiv = document.createElement('div');
-                msgDiv.id = 'temp-message-box';
-                msgDiv.className = 'fixed top-4 right-4 bg-pink-600 text-white p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 transform translate-x-1/2';
-                document.body.appendChild(msgDiv);
-            }
-            msgDiv.textContent = message;
-            msgDiv.classList.remove('opacity-0', 'translate-x-1/2');
-            msgDiv.classList.add('opacity-100', 'translate-x-0');
-            setTimeout(() => {
-                msgDiv.classList.remove('opacity-100', 'translate-x-0');
-                msgDiv.classList.add('opacity-0', 'translate-x-1/2');
-                setTimeout(() => msgDiv.remove(), 300);
-            }, 3000);
-        }
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Case:</label>
+          <button id="case-toggle-btn" class="w-full p-2 bg-purple-500 text-white rounded-lg font-semibold text-sm">UPPERCASE</button>
+        </div>
+      </div>
 
-        function applyScreenProtection() {
-            canvas.oncontextmenu = (e) => {
-                e.preventDefault();
-                showMessageBox("Screenshot features are restricted until unlocked!");
-            };
-            window.onkeydown = (e) => {
-                if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
-                    e.preventDefault();
-                    showMessageBox("Printing is disabled due to the daily limit. Please unlock!");
-                    return false;
-                }
-            };
-        }
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Text Outline (Stroke):</label>
+        <button id="outline-toggle-btn" class="w-full p-2 bg-gray-200 text-gray-800 rounded-lg font-semibold text-sm border-2 border-gray-400">No Outline</button>
+      </div>
 
-        function removeScreenProtection() {
-            canvas.oncontextmenu = null;
-            window.onkeydown = null;
-        }
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Background Color:</label>
+        <div id="color-selector" class="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-lg justify-center sm:justify-start"></div>
+      </div>
 
-        function checkDailyLimit() {
-            if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
-                return { allowed: true, count: 'Unlimited' };
-            }
-            const today = new Date().toDateString();
-            const lastDate = localStorage.getItem(DATE_KEY);
-            let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
-            if (lastDate !== today) {
-                count = 0;
-                localStorage.setItem(COUNT_KEY, '0');
-                localStorage.setItem(DATE_KEY, today);
-            }
-            const allowed = count < DAILY_LIMIT;
-            return { allowed: allowed, count: count };
-        }
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-transparent mb-1 select-none">Action</label>
+          <button id="randomize-btn" class="w-full py-2 px-4 bg-orange-500 text-white rounded-lg font-semibold text-sm">Randomize Placement</button>
+        </div>
 
-        function incrementCount() {
-            if (localStorage.getItem(UNLIMITED_KEY) === 'true') {
-                return;
-            }
-            let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
-            count += 1;
-            localStorage.setItem(COUNT_KEY, count.toString());
-            if (count >= DAILY_LIMIT) updateDownloadButtonState();
-        }
+        <div>
+          <label for="font-size" class="block text-sm font-medium text-gray-700 mb-1">Font Size (Max 62px)</label>
+          <input type="range" id="font-size" min="30" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
+          <span id="font-size-value" class="text-xs text-gray-500 block text-center mt-1">62px</span>
+        </div>
 
-        function showLimitMessage() {
-            downloadBtn.classList.add('hidden');
-            limitMessageDiv.classList.remove('hidden');
-        }
+        <div>
+          <label for="border-radius" class="block text-sm font-medium text-gray-700 mb-1">Border Radius</label>
+          <input type="range" id="border-radius" min="0" max="50" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
+          <span id="border-radius-value" class="text-xs text-gray-500 block text-center mt-1">12px</span>
+        </div>
+      </div>
 
-        function hideLimitMessage() {
-            downloadBtn.classList.remove('hidden');
-            limitMessageDiv.classList.add('hidden');
-        }
-        
-        function updateDownloadButtonState() {
-            const status = checkDailyLimit();
-            if (status.allowed) {
-                hideLimitMessage();
-                removeScreenProtection();
-                if (status.count === 'Unlimited') {
-                    downloadBtn.textContent = 'Download Meme (Unlimited)';
-                } else {
-                    downloadBtn.textContent = `Download Meme (PNG) (${status.count}/${DAILY_LIMIT} Used)`;
-                }
-                downloadBtn.disabled = false;
-            } else {
-                downloadBtn.textContent = 'Download Meme (Limit Reached)';
-                downloadBtn.disabled = true;
-                showLimitMessage();
-                applyScreenProtection();
-            }
-        }
+      <!-- NEW: Generate button (replaces the old download flow) -->
+      <button id="generate-btn" class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
+        Generate (PNG)
+      </button>
 
-        function handleUnlock() {
-            const code = secretPasswordInput.value.trim();
-            if (code === SECRET_CODE) {
-                localStorage.setItem(UNLIMITED_KEY, 'true');
-                passwordError.classList.add('hidden');
-                limitMessageDiv.innerHTML = '<p class="font-bold text-green-700">Success! You now have UNLIMITED generations! Enjoy! 🎉</p>';
-                removeScreenProtection();
-                updateDownloadButtonState();
-                downloadBtn.disabled = false;
-                downloadBtn.classList.remove('hidden');
-            } else {
-                passwordError.classList.remove('hidden');
-                secretPasswordInput.value = '';
-                showMessageBox("Incorrect code!");
-            }
-        }
-        
-        function toggleShowPassword() {
-            if (secretPasswordInput.type === 'password') {
-                secretPasswordInput.type = 'text';
-                showPasswordBtn.textContent = 'Hide';
-            } else {
-                secretPasswordInput.type = 'password';
-                showPasswordBtn.textContent = 'Show';
-            }
-        }
+      <!-- Limit & unlock panel (hidden by default) -->
+      <div id="limit-panel" class="hidden text-center p-3 bg-red-100 border border-red-400 rounded-lg space-y-3">
+        <p class="font-bold text-red-700">Oops — you have hit the limit for today. Ask Abhi for the password to generate without hassle.</p>
+        <div class="flex space-x-2">
+          <input id="limit-password" type="password" placeholder="Enter secret code" class="flex-grow p-2 border border-gray-300 rounded-lg">
+          <button id="limit-unlock-btn" class="bg-red-500 text-white px-3 py-2 rounded-lg">Unlock</button>
+        </div>
+        <p id="limit-error" class="text-sm text-red-500 hidden">Incorrect code. Try again.</p>
+      </div>
+    </div>
 
-        function updateText() {
-            let text = textInput.value.trim();
-            if (text === "") {
-                 text = "Brat and it's the same but there's three more songs so it's not";
-            }
-            outputDiv.textContent = text;
-            resetPlacement(); 
-            applyActiveStyle(); 
-        }
+    <p id="hint" class="text-center text-xs text-gray-500 mt-4">*After you click Generate the interface will hide so you can take a clean screenshot. You get 2 free generations per day.</p>
+  </div>
 
-        function applyColor(colorValue) {
-            currentBackgroundColor = colorValue;
-            canvas.style.backgroundColor = colorValue;
-        }
+  <footer id="page-footer" class="mt-6 pb-6 text-center text-sm text-gray-600">
+    © 2025 Crafted with <span class="text-red-500">💖</span> by Abhi for the Meme Geeks
+  </footer>
 
-        function applyTextColor(colorValue) {
-             currentTextColor = colorValue;
-             outputDiv.style.color = colorValue;
-        }
+  <script>
+    // Elements
+    const canvasWrap = document.getElementById('meme-wrap');
+    const canvasEl = document.getElementById('meme-canvas');
+    const outputDiv = document.getElementById('brat-output');
+    const textInput = document.getElementById('text-input');
+    const colorSelector = document.getElementById('color-selector');
+    const generateBtn = document.getElementById('generate-btn');
+    const controls = document.getElementById('controls');
+    const topHeader = document.getElementById('top-header');
+    const pageFooter = document.getElementById('page-footer');
+    const hintP = document.getElementById('hint');
+    const limitPanel = document.getElementById('limit-panel');
+    const limitPassword = document.getElementById('limit-password');
+    const limitUnlockBtn = document.getElementById('limit-unlock-btn');
+    const limitError = document.getElementById('limit-error');
 
-        function applyFontStyle(styleClass) {
-            outputDiv.classList.remove(currentFontStyle);
-            outputDiv.classList.add(styleClass);
-            currentFontStyle = styleClass;
-            applyFontSize(currentFontSize); 
-        }
+    const textStyleSelect = document.getElementById('text-style');
+    const textColorBtn = document.getElementById('text-color-btn');
+    const caseToggleBtn = document.getElementById('case-toggle-btn');
+    const outlineToggleBtn = document.getElementById('outline-toggle-btn');
+    const randomizeBtn = document.getElementById('randomize-btn');
+    const fontSizeInput = document.getElementById('font-size');
+    const fontSizeValue = document.getElementById('font-size-value');
+    const borderRadiusInput = document.getElementById('border-radius');
+    const borderRadiusValue = document.getElementById('border-radius-value');
+    const styleBlueRedBtn = document.getElementById('style-blue-red-btn');
 
-        function toggleTextColor() {
-            activeSpecialStyle = null; 
-            deactivateStyleButtons();
-            isWhiteText = !isWhiteText;
-            const color = isWhiteText ? '#ffffff' : '#000000';
-            const textLabel = isWhiteText ? 'White Text' : 'Black Text';
-            applyTextColor(color);
-            textColorBtn.textContent = textLabel;
-            textColorBtn.classList.toggle('bg-black', !isWhiteText);
-            textColorBtn.classList.toggle('text-white', !isWhiteText);
-            textColorBtn.classList.toggle('bg-white', isWhiteText);
-            textColorBtn.classList.toggle('text-black', isWhiteText);
-        }
-        
-        function toggleOutline() {
-            currentOutlineState = (currentOutlineState + 1) % outlineClasses.length;
-            outputDiv.classList.remove(...outlineClasses.filter(c => c !== '')); 
-            const newClass = outlineClasses[currentOutlineState];
-            if (newClass) {
-                outputDiv.classList.add(newClass);
-                if (currentOutlineState === 1 && currentTextColor === '#ffffff') { 
-                    applyTextColor('#000000');
-                    isWhiteText = false;
-                    textColorBtn.textContent = 'Black Text';
-                    textColorBtn.classList.add('bg-black', 'text-white');
-                    textColorBtn.classList.remove('bg-white', 'text-black');
-                } else if (currentOutlineState === 2 && currentTextColor === '#000000') { 
-                    applyTextColor('#ffffff');
-                    isWhiteText = true;
-                    textColorBtn.textContent = 'White Text';
-                    textColorBtn.classList.add('bg-white', 'text-black');
-                    textColorBtn.classList.remove('bg-black', 'text-white');
-                }
-            }
-            outlineToggleBtn.textContent = outlineLabels[currentOutlineState];
-            outlineToggleBtn.classList.remove('bg-gray-200', 'bg-white', 'bg-black', 'text-gray-800', 'text-white', 'border-gray-400', 'border-black', 'border-white');
-            if (currentOutlineState === 0) {
-                outlineToggleBtn.classList.add('bg-gray-200', 'text-gray-800', 'border-gray-400');
-            } else if (currentOutlineState === 1) { 
-                 outlineToggleBtn.classList.add('bg-white', 'text-black', 'border-black');
-            } else { 
-                 outlineToggleBtn.classList.add('bg-black', 'text-white', 'border-white');
-            }
-        }
+    // Config
+    const DAILY_LIMIT = 2;
+    const SECRET_CODE = 'ABHIJEET0123';
+    const COUNT_KEY = 'bratGenerator_dailyCount';
+    const DATE_KEY = 'bratGenerator_lastDate';
+    const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
 
-        function toggleCase() {
-            isUppercase = !isUppercase;
-            if (isUppercase) {
-                outputDiv.classList.add('uppercase');
-                caseToggleBtn.textContent = 'Normal Case';
-                caseToggleBtn.classList.replace('bg-purple-500', 'bg-red-500');
-                caseToggleBtn.classList.replace('hover:bg-purple-600', 'hover:bg-red-600');
-            } else {
-                outputDiv.classList.remove('uppercase');
-                caseToggleBtn.textContent = 'UPPERCASE';
-                caseToggleBtn.classList.replace('bg-red-500', 'bg-purple-500');
-                caseToggleBtn.classList.replace('hover:bg-red-600', 'hover:bg-purple-600');
-            }
-        }
+    // State
+    let currentFontSize = 62;
+    let currentFontStyle = 'font-brat';
+    let isUppercase = false;
+    let isWhiteText = false;
+    let currentBackgroundColor = '#fce7f3';
+    let currentTextColor = '#000000';
+    let activeSpecialStyle = null;
+    let currentActiveColorButton = null;
+    let currentOutlineState = 0;
+    const outlineClasses = ['', 'text-outline-white', 'text-outline-black'];
+    const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
 
-        function applyFontSize(size) {
-            currentFontSize = Math.min(size, 62);
-            fontSizeInput.value = currentFontSize; 
-            outputDiv.style.fontSize = `${currentFontSize}px`;
-            fontSizeValue.textContent = `${currentFontSize}px`;
-            outputDiv.style.lineHeight = (currentFontStyle === 'font-handwritten') ? '1.1' : '1.0';
-        }
+    // Colors (added dark green)
+    const colors = [
+      { name: 'Light Pink (UI)', value:'#fae6f0', border:'border-pink-500' },
+      { name: 'Pink', value:'#fce7f3', border:'border-pink-500' },
+      { name: 'Black', value:'#000000', border:'border-white' },
+      { name: 'White', value:'#ffffff', border:'border-gray-500' },
+      { name: 'Yellow', value:'#fde047', border:'border-yellow-600' },
+      { name: 'Red', value:'#fca5a5', border:'border-red-600' },
+      { name: 'Orange', value:'#fed7aa', border:'border-orange-600' },
+      { name: 'Green', value:'#d9f99d', border:'border-green-600' },
+      { name: 'Dark Green', value:'#065f46', border:'border-green-800' }
+    ];
 
-        function applyBorderRadius(radius) {
-            canvas.style.borderRadius = `${radius}px`;
-            borderRadiusValue.textContent = `${radius}px`;
-        }
+    // Utility: messages
+    function showMessage(text) {
+      const id = 'temp-msg';
+      let el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement('div');
+        el.id = id;
+        el.className = 'fixed top-4 right-4 bg-pink-600 text-white p-3 rounded-lg shadow-xl z-50';
+        document.body.appendChild(el);
+      }
+      el.textContent = text;
+      setTimeout(() => { if(el) el.remove(); }, 3000);
+    }
 
-        function createColorButtons() {
-            colorSelector.innerHTML = '';
-            colors.forEach((color, index) => {
-                const button = document.createElement('button');
-                button.className = `w-8 h-8 rounded-full shadow-md transition duration-150 transform hover:scale-110 ${color.border} border-2`;
-                button.style.backgroundColor = color.value;
-                button.title = color.name;
-                button.onclick = () => {
-                    activeSpecialStyle = null; 
-                    deactivateStyleButtons();
-                    applyColor(color.value);
-                    applyTextColor(isWhiteText ? '#ffffff' : '#000000');
-                    document.querySelectorAll('#color-selector button').forEach(btn => { btn.style.borderWidth = '2px'; });
-                    button.style.borderWidth = '4px'; 
-                    currentActiveColorButton = button;
-                };
-                colorSelector.appendChild(button);
-                if (index === 1) { 
-                    button.style.borderWidth = '4px';
-                    currentActiveColorButton = button;
-                }
-            });
-        }
-        
-        function deactivateStyleButtons() {
-            styleBlueRedBtn.classList.remove('ring-4', 'ring-offset-2', 'ring-red-700');
-            if (currentActiveColorButton) {
-                currentActiveColorButton.style.borderWidth = '2px';
-                currentActiveColorButton = null;
-            }
-        }
+    // Daily limit helpers
+    function checkDailyLimit() {
+      if (localStorage.getItem(UNLIMITED_KEY) === 'true') return { allowed:true, count:'Unlimited' };
+      const today = new Date().toDateString();
+      const last = localStorage.getItem(DATE_KEY);
+      let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
+      if (last !== today) {
+        count = 0;
+        localStorage.setItem(COUNT_KEY, '0');
+        localStorage.setItem(DATE_KEY, today);
+      }
+      return { allowed: count < DAILY_LIMIT, count };
+    }
+    function incrementCount() {
+      if (localStorage.getItem(UNLIMITED_KEY) === 'true') return;
+      let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
+      count += 1;
+      localStorage.setItem(COUNT_KEY, count.toString());
+      // update button label/hint
+      updateUsageHint();
+    }
 
-        function setSpecialStyle(styleName, styleButton) {
-            if (styleName !== 'blue-red') return;
-            document.querySelectorAll('#color-selector button').forEach(btn => btn.style.borderWidth = '2px');
-            if (activeSpecialStyle === styleName) {
-                activeSpecialStyle = null;
-                deactivateStyleButtons();
-                applyColor(colors[1].value); 
-                applyTextColor(colors[2].value); 
-                const defaultColorButton = colorSelector.querySelector(`button[title="${colors[1].name}"]`);
-                if(defaultColorButton) { defaultColorButton.style.borderWidth = '4px'; currentActiveColorButton = defaultColorButton; }
-            } else {
-                activeSpecialStyle = styleName;
-                deactivateStyleButtons();
-                styleButton.classList.add('ring-4', 'ring-offset-2', 'ring-red-700');
-                applyColor('#1d4ed8'); 
-                applyTextColor('#ef4444'); 
-            }
-            updateText();
-        }
-        
-        function applyActiveStyle() {
-            if (activeSpecialStyle === 'blue-red') {
-                applyColor('#1d4ed8');
-                applyTextColor('#ef4444');
-            } else {
-                applyColor(currentBackgroundColor);
-                applyTextColor(currentTextColor);
-            }
-        }
+    function updateUsageHint() {
+      const status = checkDailyLimit();
+      if (status.count === 'Unlimited') {
+        hintP.textContent = '*You have unlimited access (unlocked).';
+      } else {
+        hintP.textContent = `*After you click Generate the interface will hide so you can take a clean screenshot. You have used ${status.count}/${DAILY_LIMIT} today.`;
+      }
+    }
 
-        function randomizePlacement() {
-            resetPlacement(); 
-            const lines = outputDiv.textContent.split('\n');
-            outputDiv.innerHTML = ''; 
-            lines.forEach(line => {
-                const span = document.createElement('span');
-                span.textContent = line.trim();
-                const randomMarginLeft = Math.floor(Math.random() * 21) - 10;
-                const randomMarginRight = Math.floor(Math.random() * 21) - 10;
-                const randomPaddingTop = Math.floor(Math.random() * 11);
-                const randomPaddingBottom = Math.floor(Math.random() * 11);
-                span.style.display = 'block'; 
-                span.style.marginLeft = `${randomMarginLeft}px`;
-                span.style.marginRight = `${randomMarginRight}px`;
-                span.style.paddingTop = `${randomPaddingTop}px`;
-                span.style.paddingBottom = `${randomPaddingBottom}px`;
-                span.className = outputDiv.className; 
-                span.style.cssText += outputDiv.style.cssText; 
-                span.style.color = currentTextColor;
-                outputDiv.appendChild(span);
-            });
-            randomizeBtn.textContent = 'Reset Placement';
-            randomizeBtn.classList.replace('bg-orange-500', 'bg-gray-500');
-            randomizeBtn.classList.replace('hover:bg-orange-600', 'hover:bg-gray-600');
-        }
+    // Create color buttons
+    function createColorButtons() {
+      colorSelector.innerHTML = '';
+      colors.forEach((c, i) => {
+        const btn = document.createElement('button');
+        btn.className = `w-8 h-8 rounded-full shadow-md transition transform hover:scale-110 ${c.border} border-2`;
+        btn.style.backgroundColor = c.value;
+        btn.title = c.name;
+        btn.onclick = () => {
+          activeSpecialStyle = null;
+          deactivateStyleButtons();
+          applyColor(c.value);
+          applyTextColor(isWhiteText ? '#ffffff' : '#000000');
+          document.querySelectorAll('#color-selector button').forEach(b=>b.style.borderWidth='2px');
+          btn.style.borderWidth='4px';
+          currentActiveColorButton = btn;
+        };
+        colorSelector.appendChild(btn);
+        if (i===1) { btn.style.borderWidth='4px'; currentActiveColorButton = btn; }
+      });
+    }
 
-        function resetPlacement() {
-            let text = textInput.value.trim();
-            if (text === "") {
-                 text = "Brat and it's the same but there's three more songs so it's not";
-            }
-            outputDiv.textContent = text;
-            randomizeBtn.textContent = 'Randomize Placement';
-            randomizeBtn.classList.replace('bg-gray-500', 'bg-orange-500');
-            randomizeBtn.classList.replace('hover:bg-gray-600', 'hover:bg-orange-600');
-            applyFontStyle(currentFontStyle); 
-            applyFontSize(currentFontSize);
-            if(isUppercase) { outputDiv.classList.add('uppercase'); }
-            applyActiveStyle();
-        }
-        
-        // --- Synchronous-open download flow: write HTML into opened window (works on Chrome Android) ---
-        function openImageInNewTabFromWindow(winRef, blobOrDataUrl, isBlob, fileName) {
-            try {
-                if (!winRef || winRef.closed) return false;
+    function applyColor(val) { currentBackgroundColor = val; canvasEl.style.backgroundColor = val; }
+    function applyTextColor(val) { currentTextColor = val; outputDiv.style.color = val; }
 
-                if (isBlob) {
-                    const url = URL.createObjectURL(blobOrDataUrl);
-                    const html = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + url + '" style="max-width:100%;height:auto;display:block;" alt="Brat Meme" /></body></html>';
-                    winRef.document.open();
-                    winRef.document.write(html);
-                    winRef.document.close();
-                    setTimeout(() => URL.revokeObjectURL(url), 8000);
-                    return true;
-                } else {
-                    const html = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + (fileName || 'Brat Meme') + '</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + blobOrDataUrl + '" style="max-width:100%;height:auto;display:block;" alt="Brat Meme" /></body></html>';
-                    winRef.document.open();
-                    winRef.document.write(html);
-                    winRef.document.close();
-                    return true;
-                }
-            } catch (e) {
-                console.error('openImageInNewTabFromWindow error', e);
-                return false;
-            }
-        }
+    function applyFontStyle(styleClass) {
+      outputDiv.classList.remove(currentFontStyle);
+      outputDiv.classList.add(styleClass);
+      currentFontStyle = styleClass;
+      applyFontSize(currentFontSize);
+    }
 
-        function handleDownload() {
-            const status = checkDailyLimit();
-            if (!status.allowed) {
-                updateDownloadButtonState();
-                showMessageBox("Limit reached! Enter the code to download.");
-                return;
-            }
+    function applyFontSize(size) {
+      currentFontSize = Math.min(size, 62);
+      fontSizeInput.value = currentFontSize;
+      outputDiv.style.fontSize = `${currentFontSize}px`;
+      fontSizeValue.textContent = `${currentFontSize}px`;
+      outputDiv.style.lineHeight = (currentFontStyle === 'font-handwritten') ? '1.1' : '1.0';
+    }
 
-            // Open a blank window synchronously (avoids popup blocking on mobile Chrome)
-            const newWin = window.open('', '_blank');
+    function applyBorderRadius(radius) {
+      canvasEl.style.borderRadius = `${radius}px`;
+      borderRadiusValue.textContent = `${radius}px`;
+    }
 
-            const originalBodyBackgroundColor = document.body.style.backgroundColor;
-            document.body.style.backgroundColor = canvas.style.backgroundColor || currentBackgroundColor;
+    function toggleTextColor() {
+      activeSpecialStyle = null;
+      deactivateStyleButtons();
+      isWhiteText = !isWhiteText;
+      const color = isWhiteText ? '#ffffff' : '#000000';
+      const label = isWhiteText ? 'White Text' : 'Black Text';
+      applyTextColor(color);
+      textColorBtn.textContent = label;
+      textColorBtn.classList.toggle('bg-black', !isWhiteText);
+      textColorBtn.classList.toggle('text-white', !isWhiteText);
+      textColorBtn.classList.toggle('bg-white', isWhiteText);
+      textColorBtn.classList.toggle('text-black', isWhiteText);
+    }
 
-            html2canvas(canvas, { allowTaint: true, useCORS: true, scale: 2 })
-                .then(canvasImage => {
-                    let blobHandled = false;
-                    try {
-                        canvasImage.toBlob(function(blob) {
-                            if (blob && blob.size > 0) {
-                                const fileName = 'brat_meme_' + Date.now() + '.png';
-                                const opened = openImageInNewTabFromWindow(newWin, blob, true, fileName);
-                                if (!opened) {
-                                    const url = URL.createObjectURL(blob);
-                                    const fallbackWin = window.open(url, '_blank');
-                                    setTimeout(() => URL.revokeObjectURL(url), 6000);
-                                    if (!fallbackWin) {
-                                        const a = document.createElement('a');
-                                        a.href = url;
-                                        a.download = fileName;
-                                        document.body.appendChild(a);
-                                        a.click();
-                                        document.body.removeChild(a);
-                                        URL.revokeObjectURL(url);
-                                    }
-                                }
-                                incrementCount();
-                                updateDownloadButtonState();
-                                showMessageBox('Image opened in a new tab. Save it from there.');
-                                blobHandled = true;
-                            } else {
-                                console.warn('toBlob returned null/empty blob — will fallback to dataURL');
-                            }
-                        }, 'image/png');
-                    } catch (err) {
-                        console.warn('toBlob threw an error, will fallback to toDataURL', err);
-                    }
+    function toggleOutline() {
+      currentOutlineState = (currentOutlineState + 1) % outlineClasses.length;
+      outputDiv.classList.remove(...outlineClasses.filter(c=>c!==''));
+      const cls = outlineClasses[currentOutlineState];
+      if (cls) outputDiv.classList.add(cls);
+      outlineToggleBtn.textContent = outlineLabels[currentOutlineState];
+    }
 
-                    setTimeout(() => {
-                        if (!blobHandled) {
-                            try {
-                                const dataUrl = canvasImage.toDataURL('image/png');
-                                const opened = openImageInNewTabFromWindow(newWin, dataUrl, false, 'brat_meme_' + Date.now() + '.png');
-                                if (!opened) {
-                                    const fallbackWin = window.open();
-                                    if (fallbackWin) {
-                                        fallbackWin.document.write('<!doctype html><html><head><title>Brat Meme</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;background:#fff;"><img src="' + dataUrl + '" style="max-width:100%;height:auto;display:block;" /></body></html>');
-                                        fallbackWin.document.close();
-                                    } else {
-                                        const link = document.createElement('a');
-                                        link.href = dataUrl;
-                                        link.download = 'brat_meme_' + Date.now() + '.png';
-                                        document.body.appendChild(link);
-                                        link.click();
-                                        document.body.removeChild(link);
-                                    }
-                                }
-                                incrementCount();
-                                updateDownloadButtonState();
-                                showMessageBox('Image opened in a new tab. Save it from there.');
-                            } catch (e) {
-                                console.error('Fallback toDataURL failed:', e);
-                                showMessageBox('Download failed. Check console for details.');
-                            }
-                        }
-                    }, 700);
-                })
-                .catch(error => {
-                    console.error('html2canvas error:', error);
-                    showMessageBox('Image generation failed. Check console for details.');
-                    try { if (newWin && !newWin.closed) newWin.close(); } catch(e) {}
-                })
-                .finally(() => {
-                    document.body.style.backgroundColor = originalBodyBackgroundColor;
-                });
-        }
+    function toggleCase() {
+      isUppercase = !isUppercase;
+      if (isUppercase) { outputDiv.classList.add('uppercase'); caseToggleBtn.textContent='Normal Case'; }
+      else { outputDiv.classList.remove('uppercase'); caseToggleBtn.textContent='UPPERCASE'; }
+    }
 
-        // --- Event listeners ---
-        textInput.addEventListener('input', updateText);
-        textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
-        textColorBtn.addEventListener('click', toggleTextColor);
-        outlineToggleBtn.addEventListener('click', toggleOutline);
-        caseToggleBtn.addEventListener('click', toggleCase);
-        fontSizeInput.addEventListener('input', (e) => applyFontSize(parseInt(e.target.value)));
-        borderRadiusInput.addEventListener('input', (e) => applyBorderRadius(parseInt(e.target.value)));
+    function deactivateStyleButtons() {
+      styleBlueRedBtn.classList.remove('ring-4','ring-offset-2','ring-red-700');
+      if (currentActiveColorButton) { currentActiveColorButton.style.borderWidth='2px'; currentActiveColorButton = null; }
+    }
 
-        styleGreenBtn.addEventListener('click', () => {}); 
-        styleBlueRedBtn.addEventListener('click', () => setSpecialStyle('blue-red', styleBlueRedBtn));
-        
-        showPasswordBtn.addEventListener('click', toggleShowPassword);
+    function setSpecialStyle(name, btnEl) {
+      if (name!=='blue-red') return;
+      document.querySelectorAll('#color-selector button').forEach(b=>b.style.borderWidth='2px');
+      if (activeSpecialStyle === name) {
+        activeSpecialStyle = null; deactivateStyleButtons(); applyColor(colors[1].value); applyTextColor(colors[2].value);
+        const defaultBtn = colorSelector.querySelector(`button[title="${colors[1].name}"]`);
+        if (defaultBtn) { defaultBtn.style.borderWidth='4px'; currentActiveColorButton = defaultBtn; }
+      } else {
+        activeSpecialStyle = name; deactivateStyleButtons(); btnEl.classList.add('ring-4','ring-offset-2','ring-red-700');
+        applyColor('#1d4ed8'); applyTextColor('#ef4444');
+      }
+      updateText();
+    }
 
-        randomizeBtn.addEventListener('click', () => {
-            if (randomizeBtn.textContent === 'Randomize Placement') {
-                randomizePlacement();
-            } else {
-                resetPlacement();
-            }
-        });
+    function updateText() {
+      let t = textInput.value.trim();
+      if (!t) t = "Brat and it's the same but there's three more songs so it's not";
+      outputDiv.textContent = t;
+      resetPlacement();
+      applyActiveStyle();
+    }
 
-        downloadBtn.addEventListener('click', handleDownload);
-        unlockBtn.addEventListener('click', handleUnlock);
-        secretPasswordInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleUnlock();
-            }
-        });
+    function applyActiveStyle() {
+      if (activeSpecialStyle === 'blue-red') { applyColor('#1d4ed8'); applyTextColor('#ef4444'); }
+      else { applyColor(currentBackgroundColor); applyTextColor(currentTextColor); }
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            createColorButtons();
-            currentFontSize = 62;
-            fontSizeInput.value = 62;
-            updateText();
-            applyFontSize(currentFontSize); 
-            applyBorderRadius(parseInt(borderRadiusInput.value));
-            updateDownloadButtonState();
-        });
-    </script>
+    function randomizePlacement() {
+      resetPlacement();
+      const lines = outputDiv.textContent.split('\n');
+      outputDiv.innerHTML = '';
+      lines.forEach(line => {
+        const span = document.createElement('span');
+        span.textContent = line.trim();
+        const ml = Math.floor(Math.random()*21)-10;
+        const mr = Math.floor(Math.random()*21)-10;
+        const pt = Math.floor(Math.random()*11);
+        const pb = Math.floor(Math.random()*11);
+        span.style.display='block';
+        span.style.marginLeft=`${ml}px`;
+        span.style.marginRight=`${mr}px`;
+        span.style.paddingTop=`${pt}px`;
+        span.style.paddingBottom=`${pb}px`;
+        span.className = outputDiv.className;
+        span.style.cssText += outputDiv.style.cssText;
+        span.style.color = currentTextColor;
+        outputDiv.appendChild(span);
+      });
+      randomizeBtn.textContent='Reset Placement';
+      randomizeBtn.classList.replace('bg-orange-500','bg-gray-500');
+    }
+
+    function resetPlacement() {
+      let t = textInput.value.trim();
+      if (!t) t = "Brat and it's the same but there's three more songs so it's not";
+      outputDiv.textContent = t;
+      randomizeBtn.textContent='Randomize Placement';
+      randomizeBtn.classList.replace('bg-gray-500','bg-orange-500');
+      applyFontStyle(currentFontStyle);
+      applyFontSize(currentFontSize);
+      if (isUppercase) outputDiv.classList.add('uppercase');
+      applyActiveStyle();
+    }
+
+    // NEW: presentation mode toggles - hides UI so user can screenshot.
+    function enterPresentationMode() {
+      // hide UI sections but keep canvas visible and expand it
+      controls.classList.add('hidden');
+      topHeader.classList.add('hidden');
+      pageFooter.classList.add('hidden');
+      hintP.classList.add('hidden');
+
+      document.documentElement.classList.add('presentation-body');
+      canvasEl.classList.add('presentation-canvas');
+
+      // small topbar with Exit + usage
+      const bar = document.createElement('div');
+      bar.id = 'presentation-bar';
+      bar.className = 'presentation-topbar';
+      bar.innerHTML = `<span id="usage-label">Use: ${checkDailyLimit().count}/${DAILY_LIMIT}</span>
+                       <button id="exit-presentation" class="ml-3 px-2 py-1 text-sm rounded bg-gray-200">Exit</button>`;
+      document.body.appendChild(bar);
+      document.getElementById('exit-presentation').addEventListener('click', exitPresentationMode);
+    }
+
+    function exitPresentationMode() {
+      controls.classList.remove('hidden');
+      topHeader.classList.remove('hidden');
+      pageFooter.classList.remove('hidden');
+      hintP.classList.remove('hidden');
+      document.documentElement.classList.remove('presentation-body');
+      canvasEl.classList.remove('presentation-canvas');
+      const bar = document.getElementById('presentation-bar');
+      if (bar) bar.remove();
+    }
+
+    // Limit/unlock handling
+    function showLimitPanel() {
+      limitPanel.classList.remove('hidden');
+      window.scrollTo({ top: limitPanel.getBoundingClientRect().top + window.scrollY - 60, behavior: 'smooth' });
+    }
+    function hideLimitPanel() { limitPanel.classList.add('hidden'); limitError.classList.add('hidden'); limitPassword.value=''; }
+
+    function handleUnlockAttempt() {
+      const code = (limitPassword.value||'').trim();
+      if (code === SECRET_CODE) {
+        localStorage.setItem(UNLIMITED_KEY, 'true');
+        limitError.classList.add('hidden');
+        showMessage('Unlocked! You now have unlimited generations.');
+        hideLimitPanel();
+        updateUsageHint();
+      } else {
+        limitError.classList.remove('hidden');
+        limitPassword.value='';
+      }
+    }
+
+    // Generate button logic: uses same daily limit behavior as downloads did.
+    generateBtn.addEventListener('click', () => {
+      const status = checkDailyLimit();
+      if (!status.allowed) {
+        showLimitPanel();
+        return;
+      }
+
+      // Allowed: increment count and enter presentation so user can screenshot
+      incrementCount();
+      updateUsageHint();
+
+      // Enter presentation mode so user can take screenshot of the canvas
+      enterPresentationMode();
+
+      // Optional: briefly flash a message
+      showMessage('Presentation mode: take a screenshot now. Tap Exit when done.');
+    });
+
+    limitUnlockBtn.addEventListener('click', handleUnlockAttempt);
+    limitPassword.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleUnlockAttempt(); });
+
+    // Wire UI controls
+    textInput.addEventListener('input', updateText);
+    textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
+    textColorBtn.addEventListener('click', toggleTextColor);
+    outlineToggleBtn.addEventListener('click', toggleOutline);
+    caseToggleBtn.addEventListener('click', toggleCase);
+    randomizeBtn.addEventListener('click', () => {
+      if (randomizeBtn.textContent === 'Randomize Placement') randomizePlacement();
+      else resetPlacement();
+    });
+    fontSizeInput.addEventListener('input', (e) => applyFontSize(parseInt(e.target.value)));
+    borderRadiusInput.addEventListener('input', (e) => applyBorderRadius(parseInt(e.target.value)));
+    styleBlueRedBtn.addEventListener('click', () => setSpecialStyle('blue-red', styleBlueRedBtn));
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      createColorButtons();
+      currentFontSize = 62;
+      fontSizeInput.value = 62;
+      updateText();
+      applyFontSize(currentFontSize);
+      applyBorderRadius(parseInt(borderRadiusInput.value || 12));
+      updateUsageHint();
+    });
+  </script>
 </body>
 </html>
