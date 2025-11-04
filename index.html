@@ -11,17 +11,23 @@
     .font-brat { font-family: 'Arial Black', Impact, sans-serif; font-weight:900; }
     .font-monospace { font-family: 'Courier New', Courier, monospace; }
     .font-handwritten { font-family: 'Permanent Marker', cursive; font-weight:400; }
-    .brat-text { line-height:1.0; word-break:break-word; white-space:pre-wrap; transition:color .1s; }
+    .brat-text { line-height:1.0; word-break:break-word; white-space:pre-wrap; transition:color .1s; text-align:center; }
     .text-outline-white { -webkit-text-stroke:3px white; text-stroke:3px white; }
     .text-outline-black { -webkit-text-stroke:3px black; text-stroke:3px black; }
     .text-glow-pink { text-shadow:0 0 3px rgba(255,0,100,.6), 0 0 6px rgba(255,0,150,.4); }
     ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#f1f1f1; } ::-webkit-scrollbar-thumb { background:#a3a3a3; border-radius:4px; }
     .range-pink-500::-webkit-slider-thumb { background-color:#ec4899; } .range-pink-500::-moz-range-thumb { background-color:#ec4899; }
+
     /* Presentation mode styles */
     .presentation-body { display:flex; align-items:center; justify-content:center; height:100vh; margin:0; background:#fff; }
-    .presentation-canvas { box-shadow: none; border-radius:0 !important; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; }
-    /* Small top bar when in presentation */
-    .presentation-topbar { position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:60; background:rgba(255,255,255,.95); padding:.35rem .6rem; border-radius:999px; box-shadow:0 3px 8px rgba(0,0,0,.12); font-weight:600; }
+    .presentation-canvas { box-shadow: none; border-radius:0 !important; width:100vw; height:100vh; display:flex; align-items:center; justify-content:center; padding:20px !important; }
+    .presentation-topbar { position:fixed; top:8px; left:50%; transform:translateX(-50%); z-index:60; background:rgba(255,255,255,.95); padding:.35rem .6rem; border-radius:999px; box-shadow:0 3px 8px rgba(0,0,0,.12); font-weight:600; display:flex; align-items:center; gap:8px; }
+
+    /* Ensure output text fits: use flex and center */
+    #brat-output { display:flex; align-items:center; justify-content:center; width:100%; padding:6px; box-sizing:border-box; }
+
+    /* Prevent accidental overflow in presentation: cap max lines visually */
+    .fit-multiline { display:block; width:100%; word-wrap:break-word; overflow-wrap:break-word; hyphens:auto; }
   </style>
 </head>
 <body class="min-h-screen p-4 flex flex-col items-center font-inter" style="background-color:#fae6f0;">
@@ -31,17 +37,15 @@
       <p class="text-sm text-pink-800 mt-1 italic text-glow-pink font-semibold">by Abhiiii...🫴🏻 for the meme geeks</p>
     </header>
 
-    <!-- Canvas -->
     <div id="meme-wrap" class="w-full mb-6">
       <div id="meme-canvas" class="w-full aspect-square flex items-center justify-center p-4 shadow-xl transition-colors duration-300"
            style="background-color:#fce7f3; min-height:350px; border-radius:12px;">
-        <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words" style="color:#000;">
+        <div id="brat-output" class="brat-text font-brat text-center text-5xl sm:text-7xl lg:text-8xl w-full leading-none break-words fit-multiline" style="color:#000;">
           Brat and it's the same but there's three more songs so it's not
         </div>
       </div>
     </div>
 
-    <!-- Controls panel -->
     <div id="controls" class="bg-white p-4 rounded-xl shadow-lg space-y-4">
       <div>
         <label for="text-input" class="block text-sm font-medium text-gray-700 mb-1">Your Text (Use Enter for New Lines):</label>
@@ -93,7 +97,7 @@
 
         <div>
           <label for="font-size" class="block text-sm font-medium text-gray-700 mb-1">Font Size (Max 62px)</label>
-          <input type="range" id="font-size" min="30" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
+          <input type="range" id="font-size" min="18" max="62" value="62" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-pink-500">
           <span id="font-size-value" class="text-xs text-gray-500 block text-center mt-1">62px</span>
         </div>
 
@@ -104,12 +108,10 @@
         </div>
       </div>
 
-      <!-- NEW: Generate button (replaces the old download flow) -->
       <button id="generate-btn" class="w-full py-3 px-4 bg-pink-500 text-white text-lg font-bold rounded-lg shadow-xl hover:bg-pink-600 transition duration-150">
         Generate (PNG)
       </button>
 
-      <!-- Limit & unlock panel (hidden by default) -->
       <div id="limit-panel" class="hidden text-center p-3 bg-red-100 border border-red-400 rounded-lg space-y-3">
         <p class="font-bold text-red-700">Oops — you have hit the limit for today. Ask Abhi for the password to generate without hassle.</p>
         <div class="flex space-x-2">
@@ -160,7 +162,7 @@
     const SECRET_CODE = 'ABHIJEET0123';
     const COUNT_KEY = 'bratGenerator_dailyCount';
     const DATE_KEY = 'bratGenerator_lastDate';
-    const UNLIMITED_KEY = 'bratGenerator_unlimitedAccess';
+    const UNLIMITED_UNTIL_KEY = 'bratGenerator_unlimitedUntil'; // stores date string (to allow unlimited for that day only)
 
     // State
     let currentFontSize = 62;
@@ -175,7 +177,7 @@
     const outlineClasses = ['', 'text-outline-white', 'text-outline-black'];
     const outlineLabels = ['No Outline', 'White Outline', 'Black Outline'];
 
-    // Colors (added dark green)
+    // Colors
     const colors = [
       { name: 'Light Pink (UI)', value:'#fae6f0', border:'border-pink-500' },
       { name: 'Pink', value:'#fce7f3', border:'border-pink-500' },
@@ -202,10 +204,27 @@
       setTimeout(() => { if(el) el.remove(); }, 3000);
     }
 
+    // Date helpers
+    function todayString() {
+      return new Date().toDateString();
+    }
+
+    // Unlimited-for-day helpers
+    function isUnlimitedToday() {
+      const u = localStorage.getItem(UNLIMITED_UNTIL_KEY);
+      return u === todayString();
+    }
+    function setUnlimitedForToday() {
+      localStorage.setItem(UNLIMITED_UNTIL_KEY, todayString());
+    }
+    function clearUnlimited() {
+      localStorage.removeItem(UNLIMITED_UNTIL_KEY);
+    }
+
     // Daily limit helpers
     function checkDailyLimit() {
-      if (localStorage.getItem(UNLIMITED_KEY) === 'true') return { allowed:true, count:'Unlimited' };
-      const today = new Date().toDateString();
+      if (isUnlimitedToday()) return { allowed: true, count: 'Unlimited' };
+      const today = todayString();
       const last = localStorage.getItem(DATE_KEY);
       let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
       if (last !== today) {
@@ -215,19 +234,19 @@
       }
       return { allowed: count < DAILY_LIMIT, count };
     }
+
     function incrementCount() {
-      if (localStorage.getItem(UNLIMITED_KEY) === 'true') return;
+      if (isUnlimitedToday()) return; // unlimited for today -> don't increment
       let count = parseInt(localStorage.getItem(COUNT_KEY) || '0', 10);
       count += 1;
       localStorage.setItem(COUNT_KEY, count.toString());
-      // update button label/hint
       updateUsageHint();
     }
 
     function updateUsageHint() {
       const status = checkDailyLimit();
       if (status.count === 'Unlimited') {
-        hintP.textContent = '*You have unlimited access (unlocked).';
+        hintP.textContent = '*You have unlimited generations for today (unlocked).';
       } else {
         hintP.textContent = `*After you click Generate the interface will hide so you can take a clean screenshot. You have used ${status.count}/${DAILY_LIMIT} today.`;
       }
@@ -331,6 +350,7 @@
       outputDiv.textContent = t;
       resetPlacement();
       applyActiveStyle();
+      fitTextToCanvas(); // keep it fitting as user types
     }
 
     function applyActiveStyle() {
@@ -361,6 +381,7 @@
       });
       randomizeBtn.textContent='Reset Placement';
       randomizeBtn.classList.replace('bg-orange-500','bg-gray-500');
+      fitTextToCanvas();
     }
 
     function resetPlacement() {
@@ -373,11 +394,62 @@
       applyFontSize(currentFontSize);
       if (isUppercase) outputDiv.classList.add('uppercase');
       applyActiveStyle();
+      fitTextToCanvas();
     }
 
-    // NEW: presentation mode toggles - hides UI so user can screenshot.
+    // Fit text algorithm:
+    // Reduce font-size until the content fits within the canvas area (both height and width),
+    // preserving a minimum readable font-size.
+    function fitTextToCanvas() {
+      // run only when element is in DOM
+      if (!outputDiv || !canvasEl) return;
+      // Reset to user's chosen font size first
+      const maxSize = Math.min(62, parseInt(fontSizeInput.value || 62, 10) || 62);
+      let size = maxSize;
+      outputDiv.style.fontSize = size + 'px';
+
+      // Allow some tolerance margins (padding inside canvas)
+      const padding = 12; // px
+      const maxWidth = canvasEl.clientWidth - padding * 2;
+      const maxHeight = canvasEl.clientHeight - padding * 2;
+
+      // If there's no overflow quickly return
+      // Use a temporary clone to measure without side effects when output contains spans
+      const clone = outputDiv.cloneNode(true);
+      clone.style.visibility = 'hidden';
+      clone.style.position = 'absolute';
+      clone.style.left = '-9999px';
+      clone.style.top = '-9999px';
+      clone.style.width = maxWidth + 'px';
+      clone.style.height = 'auto';
+      clone.style.whiteSpace = 'normal';
+      clone.style.display = 'block';
+      document.body.appendChild(clone);
+
+      // Decrease size until it fits or reach minimum
+      const MIN_SIZE = 18;
+      while (size >= MIN_SIZE) {
+        clone.style.fontSize = size + 'px';
+        // clone.scrollHeight and clone.scrollWidth measure the rendered size
+        const cw = clone.scrollWidth;
+        const ch = clone.scrollHeight;
+        if (cw <= maxWidth + 1 && ch <= maxHeight + 1) {
+          break;
+        }
+        size -= 2;
+      }
+
+      // Apply final size
+      outputDiv.style.fontSize = Math.max(size, MIN_SIZE) + 'px';
+      // cleanup
+      document.body.removeChild(clone);
+    }
+
+    // Presentation mode
     function enterPresentationMode() {
-      // hide UI sections but keep canvas visible and expand it
+      // Before hiding UI, ensure text fits the current canvas (scale down if needed)
+      fitTextToCanvas();
+
       controls.classList.add('hidden');
       topHeader.classList.add('hidden');
       pageFooter.classList.add('hidden');
@@ -386,14 +458,18 @@
       document.documentElement.classList.add('presentation-body');
       canvasEl.classList.add('presentation-canvas');
 
-      // small topbar with Exit + usage
       const bar = document.createElement('div');
       bar.id = 'presentation-bar';
       bar.className = 'presentation-topbar';
-      bar.innerHTML = `<span id="usage-label">Use: ${checkDailyLimit().count}/${DAILY_LIMIT}</span>
+      const usage = isUnlimitedToday() ? 'Unlimited today' : `${localStorage.getItem(COUNT_KEY)||0}/${DAILY_LIMIT}`;
+      bar.innerHTML = `<span id="usage-label">${usage}</span>
                        <button id="exit-presentation" class="ml-3 px-2 py-1 text-sm rounded bg-gray-200">Exit</button>`;
       document.body.appendChild(bar);
       document.getElementById('exit-presentation').addEventListener('click', exitPresentationMode);
+
+      // Re-fit once presentation layout is applied (canvas size may have changed)
+      // small delay to allow layout changes
+      setTimeout(() => fitTextToCanvas(), 80);
     }
 
     function exitPresentationMode() {
@@ -405,6 +481,8 @@
       canvasEl.classList.remove('presentation-canvas');
       const bar = document.getElementById('presentation-bar');
       if (bar) bar.remove();
+      // restore user's font-size control UI
+      setTimeout(() => fitTextToCanvas(), 80);
     }
 
     // Limit/unlock handling
@@ -417,9 +495,9 @@
     function handleUnlockAttempt() {
       const code = (limitPassword.value||'').trim();
       if (code === SECRET_CODE) {
-        localStorage.setItem(UNLIMITED_KEY, 'true');
+        setUnlimitedForToday();
         limitError.classList.add('hidden');
-        showMessage('Unlocked! You now have unlimited generations.');
+        showMessage('Unlocked for today — you have unlimited generations for the rest of today.');
         hideLimitPanel();
         updateUsageHint();
       } else {
@@ -428,7 +506,7 @@
       }
     }
 
-    // Generate button logic: uses same daily limit behavior as downloads did.
+    // Generate button logic (uses daily limit and unlock-for-today logic)
     generateBtn.addEventListener('click', () => {
       const status = checkDailyLimit();
       if (!status.allowed) {
@@ -436,14 +514,12 @@
         return;
       }
 
-      // Allowed: increment count and enter presentation so user can screenshot
+      // Allowed: increment count (unless unlimited for today)
       incrementCount();
       updateUsageHint();
 
-      // Enter presentation mode so user can take screenshot of the canvas
+      // Enter presentation mode so the user can screenshot the canvas
       enterPresentationMode();
-
-      // Optional: briefly flash a message
       showMessage('Presentation mode: take a screenshot now. Tap Exit when done.');
     });
 
@@ -452,19 +528,26 @@
 
     // Wire UI controls
     textInput.addEventListener('input', updateText);
-    textStyleSelect.addEventListener('change', (e) => applyFontStyle(e.target.value));
+    textStyleSelect.addEventListener('change', (e) => { applyFontStyle(e.target.value); fitTextToCanvas(); });
     textColorBtn.addEventListener('click', toggleTextColor);
-    outlineToggleBtn.addEventListener('click', toggleOutline);
-    caseToggleBtn.addEventListener('click', toggleCase);
+    outlineToggleBtn.addEventListener('click', () => { toggleOutline(); fitTextToCanvas(); });
+    caseToggleBtn.addEventListener('click', () => { toggleCase(); fitTextToCanvas(); });
     randomizeBtn.addEventListener('click', () => {
       if (randomizeBtn.textContent === 'Randomize Placement') randomizePlacement();
       else resetPlacement();
     });
-    fontSizeInput.addEventListener('input', (e) => applyFontSize(parseInt(e.target.value)));
+    fontSizeInput.addEventListener('input', (e) => { applyFontSize(parseInt(e.target.value)); fitTextToCanvas(); });
     borderRadiusInput.addEventListener('input', (e) => applyBorderRadius(parseInt(e.target.value)));
     styleBlueRedBtn.addEventListener('click', () => setSpecialStyle('blue-red', styleBlueRedBtn));
 
-    // Initialization
+    // Fit on resize/orientation change (mobile rotate)
+    window.addEventListener('resize', () => {
+      // small debounce
+      clearTimeout(window._fitDeb);
+      window._fitDeb = setTimeout(() => fitTextToCanvas(), 120);
+    });
+
+    // Init
     document.addEventListener('DOMContentLoaded', () => {
       createColorButtons();
       currentFontSize = 62;
@@ -473,6 +556,8 @@
       applyFontSize(currentFontSize);
       applyBorderRadius(parseInt(borderRadiusInput.value || 12));
       updateUsageHint();
+      // ensure first fit
+      setTimeout(() => fitTextToCanvas(), 60);
     });
   </script>
 </body>
